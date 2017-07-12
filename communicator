@@ -1,1 +1,303 @@
-/home/futszak/devel/gr0m/menel_devel/communicator
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+from flask import Flask, render_template, redirect
+import communicatorconfig as config
+import sys
+import socket
+import thread
+import MySQLdb
+import time
+import bz2
+import json
+
+
+# global variables
+# clean line
+count = 0
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+app = Flask(__name__)
+ldtime = 0
+sstatechange = False  # Switch State Changed
+sstate = True  # Switch State
+rsstate = True  # Remote switch state
+lastposition = "https://maps.googleapis.com/maps/api/staticmap?center=52.000611,21.000067167&zoom=16&size=400x400&markers=color:red%7Clabel:D%7C52.285611,21.036067167&key=AIzaSyDI39Yn7r299GZTDbuHhn9lsVL70BGmV4A"
+lasturltime = 0
+
+
+# Frontend aplication named Flask
+@app.route("/")
+def maine():
+    global rsstate
+    webtimereset(config.config['WEBtimeout'])
+    if deviceon(False):
+        if rsstate:
+            return render_template('index.html')
+        else:
+            return render_template('indexoff.html')
+    else:
+        return render_template('index2.html')
+
+
+@app.route("/engineoff")
+def engoff():
+    logsend("REFRESH")
+    webtimereset(config.config['WEBtimeout'])
+    siteremote("off")
+    return render_template('engineoff.html')
+
+
+@app.route("/engineon")
+def engon():
+    logsend("REFRESH")
+    webtimereset(config.config['WEBtimeout'])
+    siteremote("on")
+    return render_template('engineon.html')
+
+
+@app.route("/mapa")
+def rendermap():
+    global lastposition
+    logsend(lastposition)
+    return redirect(lastposition, code=302)
+
+
+def renderurlmap(time, lat, lon):
+    global lasturltime
+    global lastposition
+    bgn = "https://maps.googleapis.com/maps/api/staticmap?center="
+    mdl = "&zoom=14&size=600x600&markers=color:red%7Clabel:D%7C"
+    end = "&key="
+    if (time > lasturltime):
+        rtn = bgn+(str(lon)+(",")+str(lat))+mdl+(str(lon)+(",")+str(lat))
+        rt2 = end + config.config["googlekey"]
+        lastposition = rtn + rt2
+        lasturltime = time
+        return()
+
+
+def deviceon(cmmd):
+    global ldtime
+    if cmmd:
+        ldtime = int(str(time.time())[0:10])
+    else:
+        if ((ldtime + config.config['WEBtesttimeout']) < int(str(time.time())[0:10])):
+            return(False)
+        else:
+            return(True)
+
+
+def siteremote(cmmd):
+    global sstatechange
+    global sstate
+    if (cmmd == ("off")):
+        sstatechange = True
+        sstate = False
+        logsend("setenginestate -> OFF")
+    if cmmd == ("on"):
+        sstatechange = True
+        sstate = True
+        logsend("setenginestate -> ON")
+
+
+def period(clientsock):
+    global sstatechange
+    global sstate
+    if sstate:
+        clientsock.send("on")
+    else:
+        clientsock.send("off")
+    sstatechange = False
+
+
+def frontend():
+    app.run(host='0.0.0.0')
+    logsend("Frontend is UP")
+    exit()
+
+
+def webtimereset(timeadd):
+    global lastwebtime
+    lastwebtime = int(str(time.time())[0:10])+timeadd
+    if config.config['debug']:
+        logsend("webtime was reset")
+
+
+def logsend(s):
+    """Write log."""
+    sock.sendto(((config.config['PROCNAME'])+" "+str((int(time.time())))+': '+str(s)+'\n'), (config.config['UDP_IP'], config.config['UDP_PORT']))
+
+
+def dbwrite(time, longitude, latitude, state, x, conn):
+    #  creating database command
+    c1 = """INSERT INTO `"""
+    c2 = """`.`"""
+    c3 = """` (`time`, `longitude`, `latitude`, `state`) VALUES ('"""
+    curexecute = c1 + config.config['DB_DBNAME'] + c2 + config.config['DB_TABLENAME'] + c3
+    curepoint = """', '"""
+    cureend = """');"""
+    if config.config['debug']:
+        logsend("sending to base "+time+" "+longitude+" "+latitude+" "+state)
+    cmmd1 = str(curexecute+time+curepoint+longitude+curepoint+latitude)
+    cmmd2 = str(curepoint+state+cureend)
+    renderurlmap(time, longitude, latitude)
+    #  sending command with data to database
+    x.execute(cmmd1+cmmd2)
+    # database commit
+    conn.commit()
+
+
+def gpsmode(clientsock):
+    global lastwebtime
+    global sstatechange
+    global rsstate
+    if config.config['debug']:
+        logsend('Enter GPS mode...')
+    # set connection to database
+    conn = MySQLdb.connect(host=config.config['DB_HOSTNAME'],
+                           user=config.config['DB_USERNAME'],
+                           passwd=config.config['DB_PASSWORD'],
+                           db=config.config['DB_DBNAME'])
+    x = conn.cursor()
+    clientsock.send('gps mode OK')
+    if config.config['debug']:
+        logsend('Enter recv mode...')
+    # main loop
+    while 1:
+        # data recieved
+        try:
+            data = clientsock.recv(config.config['BUFSIZ'])
+        except:
+            logsend("device disconnected")
+            x.close()
+            conn.close()
+            break
+        # condition if client disconnected
+        if data.split() == []:
+            logsend("device disconnected")
+            x.close()
+            conn.close()
+            break
+        # condition if short data recieved
+        if (data.split()[0]) == ("short"):
+            deviceon(True)
+            dbwrite(data.split()[1], data.split()[2],
+                    data.split()[3], data.split()[4], x, conn)
+            if data.split()[4] == ("eON"):
+                rsstate = True
+            if data.split()[4] == ("eOFF"):
+                rsstate = False
+        # trying decompress data
+        else:
+            try:
+                rozp = json.loads(bz2.decompress(data))
+                if config.config['debug']:
+                    logsend("i have decompressed")
+            # recieved data ok and going to dbwrite
+                for a in range(0, len(rozp)):
+                    # st = ("long test")
+                    dbwrite(rozp[a]['time'],
+                            rozp[a]['longitude'],
+                            rozp[a]['latitude'],
+                            rozp[a]['state'], x, conn)
+            # recieved data damaged and connection closed
+            except:
+                logsend("recieved data damaged and connection closed")
+                x.close()
+                conn.close()
+                break
+                logsend("main loop return")
+        if sstatechange:
+            period(clientsock)
+        else:
+            if (int(str(time.time())[0:10])) > lastwebtime:
+                clientsock.send("no")
+            else:
+                clientsock.send("ok")
+
+
+def handler(clientsock, addr):
+    global count
+
+    if count < config.config['MAX_CONNECTION']:
+
+        count += 1
+        if config.config['debug']:
+            logsend('Enter new client')
+        logsend("numbers of clients is -> "+str(count))
+        while 1:
+            data = clientsock.recv(config.config['BUFSIZ'])
+            if not data:
+                break
+            if data == "gps":
+                gpsmode(clientsock)
+    # end this thread
+        if config.config['debug']:
+            logsend('Client was close')
+        count -= 1
+        logsend("numbers of clients is -> "+str(count))
+
+    else:
+        logsend('to many connections')
+        clientsock.send('to many connections, please try agin later')
+        logsend("".join('Client ')+str(addr)+(' session ended '))
+        clientsock.close()
+
+
+def main():
+  # thread.start_new_thread(app.run(host='0.0.0.0'))
+  logsend("begin main")
+  serversock = None
+  for res in socket.getaddrinfo((config.config['HOST']), config.config['PORT'], socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE):
+    af, socktype, proto, canonname, sa = res
+    logsend (res)
+    try:
+      serversock = socket.socket(af, socktype, proto)
+      logsend ('Preparing data socket')
+      # another used this socket if bomded
+      serversock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+      logsend ('[ + ] Network socket options:')
+    except socket.error, msg:
+      logsend("error data socket")
+      logsend (msg)
+      serversock = None
+      continue
+    try:
+      serversock.bind(sa)
+      logsend ("".join('[ + ] Port: ')+str(config.config['PORT'])+(' on interface ')+str(config.config['HOST'])+(' was established !'))
+      logsend ("".join('[ + ] Started listening max. ')+str(config.config['MAX_CONNECTION'])+str(' simultaneously connections'))
+      serversock.listen(config.config['MAX_CONNECTION'])
+    except socket.error, msg:
+      logsend ("".join('[ - ] Filed to open port: ')+str(config.config['PORT'])+(' and listening because: ')+str(opisz_problem(msg)))
+      serversock.close()
+      serversock = None
+      continue
+    break
+
+
+  if serversock is None:
+    logsend ('Filed to open data socket')
+    sys.exit(1)
+  else:
+    logsend ('Data socket ready !')
+
+  """ Jeśli wszystko przebiegło zgodnie z planem, zaczynamy nasze działania """
+
+  logsend ('Waiting for connections ...')
+
+  while 1:
+    clientsock, addr = serversock.accept()
+    logsend ("".join('Connection from address: ')+str(addr[0]))
+    logsend ("".join('Connection from port: ')+str(addr[1]))
+    webtimereset(config.config['WEBtimeout'])
+    # logsend(lastwebtime)
+    thread.start_new_thread(handler, (clientsock, addr))
+
+
+  logsend ('Server is closed')
+  serversock.close()
+
+
+if __name__ == '__main__':
+    thread.start_new_thread(frontend,())
+    sys.exit(main())
