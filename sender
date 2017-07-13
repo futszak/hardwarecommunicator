@@ -33,7 +33,13 @@ def restart():
 def logsend(s):
     """Write log."""
     nt = (config.config['PROCNAME'])+" "+str((int(time.time())))+': '
-    sock.sendto((nt+str(s)+'\n'), (config.config['UDP_IP'], config.config['UDP_PORT']))
+    ip = config.config['UDP_IP']
+    port = config.config['UDP_PORT']
+    try:
+        sock.sendto((nt+str(s)+'\n'), (ip, port))
+    except:
+        time.sleep(1)
+        restart()
 
 
 def devicestate():

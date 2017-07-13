@@ -66,7 +66,7 @@ def renderurlmap(time, lat, lon):
     global lasturltime
     global lastposition
     bgn = "https://maps.googleapis.com/maps/api/staticmap?center="
-    mdl = "&zoom=14&size=600x600&markers=color:red%7Clabel:D%7C"
+    mdl = "&zoom=15&size=600x600&markers=color:red%7Clabel:D%7C"
     end = "&key="
     if (time > lasturltime):
         rtn = bgn+(str(lon)+(",")+str(lat))+mdl+(str(lon)+(",")+str(lat))
