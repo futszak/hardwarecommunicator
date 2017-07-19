@@ -5,3 +5,5 @@ Directory contains files:
   - communicatorconfig.py    - config for communicator
   - sender                   - script in python for device side
   - senderconfig.py          - configuration data for sender
+
+More details on http://sender.tkruk.it/
