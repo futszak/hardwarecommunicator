@@ -305,10 +305,11 @@ def gpsmode(clientsock):
             deviceon(True)
             dbwrite(data.split()[1], data.split()[2],
                     data.split()[3], data.split()[4], x, conn)
-            if data.split()[4] == ("eON"):
+            if (str(data.split()[4])[0:3]) == ("eON"):
                 rsstate = True
-            if data.split()[4] == ("eOFF"):
+            if (str(data.split()[4])[0:4]) == ("eOFF"):
                 rsstate = False
+            # logsend((data.split()[4])[0:3])
         # trying decompress data
         else:
             try:
