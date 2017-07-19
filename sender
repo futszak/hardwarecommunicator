@@ -21,33 +21,45 @@ li = []
 jsn = 0
 tryrestart = 0
 circuiton = True
+alive = int(time.time()) + config.config['alive']
 
 
 def restart():
-    logsend('proces will be restarted....')
     time.sleep(config.config['RESTART'])
     python = sys.executable
     os.execl(python, python, * sys.argv)
 
 
+def temperature():
+    """Read device temperature."""
+    f = open('/sys/devices/virtual/thermal/thermal_zone0/temp')
+    t = str(f.readline())
+    temp = (t[0]+t[1])
+    f.close()
+    return(temp)
+
+
+
 def logsend(s):
     """Write log."""
+    global alive
     nt = (config.config['PROCNAME'])+" "+str((int(time.time())))+': '
     ip = config.config['UDP_IP']
     port = config.config['UDP_PORT']
     try:
         sock.sendto((nt+str(s)+'\n'), (ip, port))
+        alive = int(time.time()) + config.config['alive']
     except:
-        time.sleep(1)
+        time.sleep(10)
         restart()
 
 
 def devicestate():
     global circuiton
     if circuiton:
-        return("eON")
+        return("eON_temp="+temperature())
     else:
-        return("eOFF")
+        return("eOFF_temp="+temperature())
 
 
 def savedata(data):
@@ -100,7 +112,7 @@ def entry(packet):
         "time": packet.split()[0],
         "longitude": packet.split()[1],
         "latitude": packet.split()[2],
-        "state": packet.split()[3],
+        "state": str(packet.split()[3]),
     }
     return(entry)
 
@@ -160,6 +172,9 @@ def sendingdata(tcpCliSock, data):
     global jsn
     global tryrestart
     global livestream
+    global alive
+    # if int(time.time()) > alive:
+    #    logsend('alive')
     if tcpCliSock == ("offline"):
         livestream = False
     # global livestream
@@ -238,6 +253,9 @@ def sendergps(tcpCliSock):
                     d2 = str(random.random())[2:11]+(" ")+devicestate()
                     sendingdata(tcpCliSock, d0+d1+d2)
                     time.sleep(1)
+            if int(time.time()) > alive:
+    	    	logsend('alive temp='+temperature())
+
 
 
 def main():
