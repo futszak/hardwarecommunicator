@@ -2,6 +2,5 @@ in server:
 new possibles for render history table (all day history,all data history)
 added switch in tblrender()
 render position map after click
-
 in device:
 time based json packet fragmentation
