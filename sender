@@ -18,7 +18,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP logging
 sock.settimeout(5)
 livestream = False
 li = []
-jsn = 0
+jsn = int(time.time()) + config.config['jsonlengt']
 tryrestart = 0
 circuiton = True
 alive = int(time.time()) + config.config['alive']
@@ -141,7 +141,7 @@ def switch(tcpCliSock):
             logsend("waiting for server answer")
             servanswer += 1
             if (servanswer > config.config['waitingforserveranswer']):
-                restart(False)
+                restart()
             time.sleep(0.1)
     if recv == ("ok"):
         livestream = True
@@ -173,12 +173,8 @@ def sendingdata(tcpCliSock, data):
     global tryrestart
     global livestream
     global alive
-    # if int(time.time()) > alive:
-    #    logsend('alive')
     if tcpCliSock == ("offline"):
         livestream = False
-    # global livestream
-    # json = 0 :).
     dataheader = str("short ")
     datasend = dataheader+data
     if livestream:
@@ -194,12 +190,12 @@ def sendingdata(tcpCliSock, data):
             restart()
     else:
         li.append(data)
-        jsn = jsn + 1
-        if jsn > config.config['jsonlengt']:
+        if jsn < int(time.time()):
             li.reverse()
             packet = []
             while li != []:
                 packet.append(entry(li.pop()))
+            # logsend(packet)
             compdata = bz2.compress(json.dumps(packet))
             if tcpCliSock == ("offline"):
                 savedata(compdata)
@@ -224,8 +220,7 @@ def sendingdata(tcpCliSock, data):
                     if tryrestart > config.config['trytorestart']:
                         restart()
                     tryrestart += 1
-
-            jsn = 0
+            jsn = int(time.time()) + config.config['jsonlengt']
 
 
 def sendergps(tcpCliSock):
@@ -254,7 +249,9 @@ def sendergps(tcpCliSock):
                     sendingdata(tcpCliSock, d0+d1+d2)
                     time.sleep(1)
             if int(time.time()) > alive:
-    	    	logsend('alive temp='+temperature())
+                logsend('alive temp='+temperature())
+                d = str(int(time.time()))+(" 99.999999999 99.999999999 ")
+                sendingdata(tcpCliSock, d+devicestate())
 
 
 
