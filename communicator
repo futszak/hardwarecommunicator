@@ -59,8 +59,8 @@ def engon():
 
 @app.route("/mapa")
 def rendermap():
+    tblrender("templates/history.html", 5)
     global lastposition
-    logsend(lastposition)
     return redirect(lastposition, code=302)
     # return render_template('3.html', navi)
 
@@ -68,6 +68,34 @@ def rendermap():
 @app.route("/history")
 def history():
     tblrender("templates/history.html")
+    # return render_template('history.html')
+    return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
+
+
+@app.route("/today")
+def today():
+    tblrender("templates/history.html", 1)
+    # return render_template('history.html')
+    return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
+
+
+@app.route("/yesterday")
+def yesterday():
+    tblrender("templates/history.html", 2)
+    # return render_template('history.html')
+    return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
+
+
+@app.route("/month")
+def month():
+    tblrender("templates/history.html", 3)
+    # return render_template('history.html')
+    return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
+
+
+@app.route("/pmonth")
+def pmonth():
+    tblrender("templates/history.html", 3)
     # return render_template('history.html')
     return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
 
@@ -168,12 +196,12 @@ def logsend(s):
 def testmaxtime(fetch):
     lt = 0
     for row in fetch:
-        if lt < int(row[1]):
+        if (lt < int(row[1]) and row[2] != "99.999999999"):
             lt = int(row[1])
     return(lt)
 
 
-def tblrender(filename):
+def tblrender(filename, sw=0):
     db = MySQLdb.connect(config.config['DB_HOSTNAME'],
                          config.config['DB_USERNAME'],
                          config.config['DB_PASSWORD'],
@@ -185,6 +213,8 @@ def tblrender(filename):
     <html>
     <head>
     <meta http-equiv="refresh" content="60">
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
     <style>
     table, th, td {
     border: 1px solid black;
@@ -192,6 +222,40 @@ def tblrender(filename):
     </style>
     </head>
     <body>
+
+        <div id="wrapper">
+            <div id="page-wrapper">
+                <div class="container-fluid">
+                    <!-- /.row -->
+                    <div class="row">
+                      <div class="col-lg-3 text-center">
+                            <div class="alert alert-info">
+                                <a href="today"><strong>Dzisiejsza</strong> historia auta</a>
+                            </div>
+                      </div>
+                      <div class="col-lg-3 text-center">
+                            <div class="alert alert-info">
+                                <a href="month"><strong>Cała</strong> historia auta</a>
+                            </div>
+                      </div>
+                      <div class="col-lg-6 text-center">
+                            <div class="alert alert-info">
+                                <a href="/"><strong>Powrót</strong> do panelu sterowania</a>
+                            </div>
+                      </div>
+                        <!-- /.between components -->
+                    <!-- /.row -->
+                </div>
+                <!-- /.container-fluid -->
+            </div>
+            <!-- /#page-wrapper -->
+        </div>
+        <!-- /#wrapper -->
+        <!-- jQuery -->
+        <script src="js/jquery.js"></script>
+        <!-- Bootstrap Core JavaScript -->
+        <script src="js/bootstrap.min.js"></script>
+
     <table style="width:100%">
     <tr>
     <th>Data i godzina</th>
@@ -210,33 +274,66 @@ def tblrender(filename):
         os.remove(filename)
     except:
         logsend("no file with old table")
+    fetch = cur.fetchall()
+    db.close()
+    if sw == 5:
+        for row in fetch:
+            if testmaxtime(fetch) == int(row[1]):
+                renderurlmap(row[1], row[2], row[3])
+                return()
     plik = open(filename, 'wb')
     l2 = 0
     count = 0
     plik.write(begin)
-    fetch = cur.fetchall()
-    logsend(str(testmaxtime(fetch)))
-    db.close()
+    # set this day, month
+    day = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%d')
+    month = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%m')
     for row in fetch:
         hum = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%Y%m%d %H:%M')
         l1 = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%H%M')
         if not (l1 == l2):
-            # logsend(str(row))
-            # logsend("\n")
             r1 = str(row[1])
-            plik.write(p1)
-            plik.write(t1+hum+t2)
-            plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
-            plik.write(t1+row[4]+t2)
-            plik.write(p2)
-            count += 1
-            if count > 100:
-                endoftablerender(plik, db)
-                return()
+            rowday = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%d')
+            rowmonth = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%m')
+            if (sw == 1):
+                if (rowday == day and row[2] != "99.999999999"):
+                    plik.write(p1)
+                    plik.write(t1+hum+t2)
+                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
+                    plik.write(t1+row[4]+t2)
+                    plik.write(p2)
+            if (sw == 2):
+                if (rowday == (int(day)-1) and row[2] != "99.999999999"):
+                    plik.write(p1)
+                    plik.write(t1+hum+t2)
+                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
+                    plik.write(t1+row[4]+t2)
+                    plik.write(p2)
+            if (sw == 3):
+                if (month == rowmonth and row[2] != "99.999999999"):
+                    plik.write(p1)
+                    plik.write(t1+hum+t2)
+                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
+                    plik.write(t1+row[4]+t2)
+                    plik.write(p2)
+            if (sw == 4):
+                if (month == (rowmonth-1) and row[2] != "99.999999999"):
+                    plik.write(p1)
+                    plik.write(t1+hum+t2)
+                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
+                    plik.write(t1+row[4]+t2)
+                    plik.write(p2)
+            if (sw == 0 and row[2] != "99.999999999"):
+                count += 1
+                plik.write(p1)
+                plik.write(t1+hum+t2)
+                plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
+                plik.write(t1+row[4]+t2)
+                plik.write(p2)
+                if count > 100:
+                    endoftablerender(plik, db)
+                    return()
         l2 = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%H%M')
-        #  render last position
-        # if (testmaxtime(fetch) == int(row[1])):
-        #     renderurlmap(int(row[1]), row[2], row[3])
     endoftablerender(plik, db)
     return()
 
