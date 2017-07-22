@@ -15,7 +15,7 @@ import json
 
 
 # global variables
-# clean line
+#
 count = 0
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 app = Flask(__name__)
@@ -23,7 +23,7 @@ ldtime = 0
 sstatechange = False  # Switch State Changed
 sstate = True  # Switch State
 rsstate = True  # Remote switch state
-lastposition = "https://maps.googleapis.com/maps/api/staticmap?center=52.000611,21.000067167&zoom=16&size=400x400&markers=color:red%7Clabel:D%7C52.285611,21.036067167&key=AIzaSyDI39Yn7r299GZTDbuHhn9lsVL70BGmV4A"
+lastposition = "https://www.google.com"
 lasturltime = 0
 
 
