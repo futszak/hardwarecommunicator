@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# rc.local
+#
+# logs for debugging
+echo RESTART >> /var/log/sdr.log
+/bin/date >> /var/log/sdr.log
+echo RESTART >> /var/log/wvd.log
+/bin/date >> /var/log/wvd.log
+# set Internet connection
+/usr/bin/wvdial internet >/var/log/wvd.log 2>&1 &
+sleep 5
+# force DNS config
+/bin/rm /etc/resolv.conf
+/bin/cp /etc/resolv2.conf /etc/resolv.conf
+# set GPS daemon
+/usr/sbin/gpsd /dev/ttyS3 -F /var/run/gpsd.sock
+# set OpenVPN daemon
+/usr/sbin/openvpn /etc/openvpn/ovpn.cfg &
+# set main python script
+/home/futszak/sender >>/var/log/sdr.log 2>&1 &
+# from AP functionality
+iptables-restore < /etc/iptables.ipv4.nat
+exit 0
