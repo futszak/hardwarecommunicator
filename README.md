@@ -7,7 +7,7 @@ Directory contains files:
   - senderconfig.py          - configuration data for sender
   - rc.local                 - /etc/rc.local - start script
 
-2.Hardware (remote device side)
+1.Hardware (remote device side)
 - OrangePI light with Armbian (linux)
 - For car (12V) impulse converter step down (7-24V input, 5V output 2A)
 - GPS/UART module with small antenna
