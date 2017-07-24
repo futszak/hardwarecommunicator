@@ -10,6 +10,7 @@ import json
 import bz2
 import random
 import senderconfig as config
+import subprocess
 from pyA20.gpio import gpio
 from pyA20.gpio import port
 
@@ -19,9 +20,15 @@ sock.settimeout(5)
 livestream = False
 li = []
 jsn = int(time.time()) + config.config['jsonlengt']
-tryrestart = 0
 circuiton = True
+tryrestart = 0
+withdatapacket = 0
+datapacket = 0
 alive = int(time.time()) + config.config['alive']
+
+
+def restartdevice():
+    subprocess.call("/sbin/reboot")
 
 
 def restart():
@@ -37,7 +44,6 @@ def temperature():
     temp = (t[0]+t[1])
     f.close()
     return(temp)
-
 
 
 def logsend(s):
@@ -173,6 +179,8 @@ def sendingdata(tcpCliSock, data):
     global tryrestart
     global livestream
     global alive
+    global datapacket
+    global withdatapacket
     if tcpCliSock == ("offline"):
         livestream = False
     dataheader = str("short ")
@@ -190,7 +198,17 @@ def sendingdata(tcpCliSock, data):
             restart()
     else:
         li.append(data)
+        data1 = data.split(" ")
+        # logsend(data1[1])
+        if ((data1[1]) != "99.999999999"):
+            withdatapacket += 1
         if jsn < int(time.time()):
+            # logsend(str(withdatapacket)+" = withdatapacket   datapacket = "+str(datapacket))
+            if withdatapacket == 0:
+                datapacket += 1
+            withdatapacket = 0
+            if datapacket > 4:
+                restartdevice()
             li.reverse()
             packet = []
             while li != []:
