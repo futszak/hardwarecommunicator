@@ -39,6 +39,8 @@ def restart():
 
 
 def temperature():
+    if config.config['debug']:
+        logsend('Enter temperature')
     """Read device temperature."""
     f = open('/sys/devices/virtual/thermal/thermal_zone0/temp')
     t = str(f.readline())
@@ -63,6 +65,8 @@ def logsend(s):
 
 def devicestate():
     global circuiton
+    if config.config['debug']:
+        logsend('Enter devicestate procedure')
     if circuiton:
         return("eON_temp="+temperature())
     else:
@@ -115,6 +119,8 @@ def loaddata(tcpCliSock):
 
 
 def entry(packet):
+    if config.config['debug']:
+        logsend('Creating json packet')
     entry = {
         "time": packet.split()[0],
         "longitude": packet.split()[1],
@@ -188,39 +194,65 @@ def sendingdata(tcpCliSock, data):
     global alive
     global datapacket
     global withdatapacket
+    if config.config['debug']:
+        logsend('Enter sendingdata procedure')
     if tcpCliSock == ("offline"):
         livestream = False
     dataheader = str("short ")
     datasend = dataheader+data
     if livestream:
+        if config.config['debug']:
+            logsend('sendingdata:  livestream is TRUE')
         try:
+            if config.config['debug']:
+                logsend('sendingdata:  try sending')
             tcpCliSock.send(datasend)
+            if config.config['debug']:
+                logsend('sendingdata:  sending OK')
             if config.config['debug']:
                 logsend("small packet was send to server...")
             if not switch(tcpCliSock):
                 restart()
         except socket.error, msg:
+            if config.config['debug']:
+                logsend('sendingdata:  socket ERROR')
             logsend("socket errot -> "+str(msg))
             logsend("lost packet -> "+str(datasend))
             restart()
     else:
+        if config.config['debug']:
+            logsend('sendingdata:  no livestream and append data')
         li.append(data)
         data1 = data.split(" ")
         # logsend(data1[1])
         if ((data1[1]) != "99.999999999"):
+            if config.config['debug']:
+                logsend('sendingdata:  packet is FAKE')
             withdatapacket += 1
+            if config.config['debug']:
+                logsend('sendingdata:  withdatapacket = '+str(withdatapacket))
+                logsend(str(jsn)+' = jsn time = '+str(int(time.time())))
         if jsn < int(time.time()):
-            # logsend(str(withdatapacket)+" = withdatapacket   datapacket = "+str(datapacket))
+            if config.config['debug']:
+                logsend('sendingdata:  json packet is FULL')
             if withdatapacket == 0:
+                if config.config['debug']:
+                    logsend('sendingdata: in json no packet with real data')
                 datapacket += 1
             withdatapacket = 0
             if datapacket > 4:
+                if config.config['debug']:
+                    logsend('sendingdata:  to many packet with no real data')
                 resetdevice()
             li.reverse()
+            if config.config['debug']:
+                logsend('sendingdata:  reversing list')
             packet = []
             while li != []:
                 packet.append(entry(li.pop()))
             # logsend(packet)
+            if config.config['debug']:
+                logsend('sendingdata:  compression data')
             compdata = bz2.compress(json.dumps(packet))
             if tcpCliSock == ("offline"):
                 savedata(compdata)
@@ -228,6 +260,8 @@ def sendingdata(tcpCliSock, data):
                     restart()
                 tryrestart += 1
             else:
+                if config.config['debug']:
+                    logsend('sendingdata:  going to sending compress data')
                 try:
                     tcpCliSock.send(compdata)
                     if config.config['debug']:
@@ -246,9 +280,16 @@ def sendingdata(tcpCliSock, data):
                         restart()
                     tryrestart += 1
             jsn = int(time.time()) + config.config['jsonlengt']
+            if config.config['debug']:
+                logsend('sendingdata:  new json-end value')
+        if config.config['debug']:
+            logsend('sendingdata:  end of procedure')
+
 
 
 def sendergps(tcpCliSock):
+    if config.config['debug']:
+        logsend('Enter senderGPS procedure')
     ldata = 0
     logsend("sendergps lets'go")
     gps_socket = gps3.GPSDSocket()
