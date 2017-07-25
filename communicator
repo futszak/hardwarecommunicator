@@ -21,7 +21,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 app = Flask(__name__)
 ldtime = 0
 sstatechange = False  # Switch State Changed
-sstate = True  # Switch State
+sstate = 1  # Switch State
 rsstate = True  # Remote switch state
 lastposition = "https://www.google.com"
 lasturltime = 0
@@ -43,22 +43,35 @@ def maine():
 
 @app.route("/engineoff")
 def engoff():
-    logsend("REFRESH")
     webtimereset(config.config['WEBtimeout'])
     siteremote("off")
-    return render_template('engineoff.html')
+    return render_template('ciroff.html')
+
+
+@app.route("/restart")
+def restart():
+    webtimereset(config.config['WEBtimeout'])
+    siteremote("restart")
+    return render_template('restart.html')
+
+
+@app.route("/reset")
+def resetdevice():
+    webtimereset(config.config['WEBtimeout'])
+    siteremote("reset")
+    return render_template('reset.html')
 
 
 @app.route("/engineon")
 def engon():
-    logsend("REFRESH")
     webtimereset(config.config['WEBtimeout'])
     siteremote("on")
-    return render_template('engineon.html')
+    return render_template('ciron.html')
 
 
 @app.route("/mapa")
 def rendermap():
+    webtimereset(config.config['WEBtimeout'])
     tblrender("templates/history.html", 5)
     global lastposition
     return redirect(lastposition, code=302)
@@ -67,6 +80,7 @@ def rendermap():
 
 @app.route("/history")
 def history():
+    webtimereset(config.config['WEBtimeout'])
     tblrender("templates/history.html")
     # return render_template('history.html')
     return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
@@ -74,6 +88,7 @@ def history():
 
 @app.route("/today")
 def today():
+    webtimereset(config.config['WEBtimeout'])
     tblrender("templates/history.html", 1)
     # return render_template('history.html')
     return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
@@ -81,6 +96,7 @@ def today():
 
 @app.route("/yesterday")
 def yesterday():
+    webtimereset(config.config['WEBtimeout'])
     tblrender("templates/history.html", 2)
     # return render_template('history.html')
     return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
@@ -88,6 +104,7 @@ def yesterday():
 
 @app.route("/month")
 def month():
+    webtimereset(config.config['WEBtimeout'])
     tblrender("templates/history.html", 3)
     # return render_template('history.html')
     return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
@@ -95,6 +112,7 @@ def month():
 
 @app.route("/pmonth")
 def pmonth():
+    webtimereset(config.config['WEBtimeout'])
     tblrender("templates/history.html", 3)
     # return render_template('history.html')
     return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
@@ -102,6 +120,7 @@ def pmonth():
 
 @app.route("/<var>")
 def other(var):
+    webtimereset(config.config['WEBtimeout'])
     try:
         logsend(int(var))
     except:
@@ -161,15 +180,28 @@ def siteremote(cmmd):
         sstatechange = True
         sstate = True
         logsend("setenginestate -> ON")
+    if cmmd == ("restart"):
+        sstatechange = True
+        sstate = 2
+        logsend("sending restart command")
+    if cmmd == ("reset"):
+        sstatechange = True
+        sstate = 3
+        logsend("sending RESET command !!!")
+
 
 
 def period(clientsock):
     global sstatechange
     global sstate
-    if sstate:
-        clientsock.send("on")
-    else:
+    if sstate == 2:
+        clientsock.send("restart")
+    if sstate == 3:
+        clientsock.send("reset")
+    if sstate == 0:
         clientsock.send("off")
+    else:
+        clientsock.send("on")
     sstatechange = False
 
 
@@ -289,7 +321,7 @@ def tblrender(filename, sw=0):
     day = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%d')
     month = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%m')
     for row in fetch:
-        hum = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%Y%m%d %H:%M')
+        hum = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%Y %M %d %H:%M')
         l1 = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%H%M')
         if not (l1 == l2):
             r1 = str(row[1])
