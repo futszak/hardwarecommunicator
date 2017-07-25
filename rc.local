@@ -8,7 +8,7 @@ echo RESTART >> /var/log/sdr.log
 echo RESTART >> /var/log/wvd.log
 /bin/date >> /var/log/wvd.log
 # set Internet connection
-/usr/bin/wvdial internet >/var/log/wvd.log 2>&1 &
+/usr/bin/wvdial internet >>/var/log/wvd.log 2>&1 &
 sleep 5
 # force DNS config
 /bin/rm /etc/resolv.conf
