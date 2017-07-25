@@ -27,5 +27,6 @@ Directory contains files:
 - Creating fake GPS data (option)
 - Autorestart program after time (in config) if problem with connection
 - Autorestart device after time if no data (from GPS)
+- Restart script and reset device on demand
 
 More details on http://sender.tkruk.it/
