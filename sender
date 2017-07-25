@@ -27,12 +27,13 @@ datapacket = 0
 alive = int(time.time()) + config.config['alive']
 
 
-def restartdevice():
+def resetdevice():
+    logsend("RESET MACHINE...")
     subprocess.call("/sbin/reboot")
 
 
 def restart():
-    time.sleep(config.config['RESTART'])
+    time.sleep(config.config['trytorestart'])
     python = sys.executable
     os.execl(python, python, * sys.argv)
 
@@ -169,6 +170,12 @@ def switch(tcpCliSock):
         gpio.output(port.PA1, gpio.HIGH)
         circuiton = True
         return(True)
+    if recv == ("restart"):
+        restart()
+        return(True)
+    if recv == ("reset"):
+        resetdevice()
+        return(True)
     else:
         logsend("no data from server")
         return(False)
@@ -208,7 +215,7 @@ def sendingdata(tcpCliSock, data):
                 datapacket += 1
             withdatapacket = 0
             if datapacket > 4:
-                restartdevice()
+                resetdevice()
             li.reverse()
             packet = []
             while li != []:
