@@ -195,7 +195,7 @@ def sendingdata(tcpCliSock, data):
     global datapacket
     global withdatapacket
     if config.config['debug']:
-        logsend('Enter sendingdata procedure')
+        logsend('Enter sendingdata procedure data = '+str(data))
     if tcpCliSock == ("offline"):
         livestream = False
     dataheader = str("short ")
@@ -225,9 +225,9 @@ def sendingdata(tcpCliSock, data):
         li.append(data)
         data1 = data.split(" ")
         # logsend(data1[1])
-        if ((data1[1]) != "99.999999999"):
+        if ((data1[1]) != "99.999999999") or ((data1[1]) != "n/a"):
             if config.config['debug']:
-                logsend('sendingdata:  packet is FAKE')
+                logsend('sendingdata:  packet is TRUE')
             withdatapacket += 1
             if config.config['debug']:
                 logsend('sendingdata:  withdatapacket = '+str(withdatapacket))
