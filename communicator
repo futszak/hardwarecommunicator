@@ -223,8 +223,6 @@ def logsend(s):
     sock.sendto(((config.config['PROCNAME'])+" "+str((int(time.time())))+': '+str(s)+'\n'), (config.config['UDP_IP'], config.config['UDP_PORT']))
 
 
-
-
 def testmaxtime(fetch):
     lt = 0
     for row in fetch:
@@ -321,7 +319,7 @@ def tblrender(filename, sw=0):
     day = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%d')
     month = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%m')
     for row in fetch:
-        hum = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%Y %M %d %H:%M')
+        hum = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%Y-%m-%d %H:%M')
         l1 = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%H%M')
         if not (l1 == l2):
             r1 = str(row[1])
