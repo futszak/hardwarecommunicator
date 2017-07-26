@@ -6,7 +6,7 @@ Directory contains files:
   - sender                   - script in python for remote device
   - senderconfig.py          - simple config data for sender
   - rc.local                 - /etc/rc.local - start script
-  /templates - files for www
+  templates - files for www
     - ciroff.html     - site after circuit off
     - ciron.html      - site after circuit on
     - index.html      - site when realtime mode and circuit on
@@ -14,9 +14,9 @@ Directory contains files:
     - indexoff.html   - site when realtime mode and circuit off
     - restart.html    - site after restart script
     - reset.html      - site after reset device
-    /css     - bootstrap files
-    /fonts   - fonts files
-    /js      - js files
+    css     - bootstrap files
+    fonts   - fonts files
+    js      - js files
 
 1.Hardware (remote device side)
 - OrangePI light with Armbian (linux)
