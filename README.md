@@ -7,13 +7,13 @@ Directory contains files:
   - senderconfig.py          - simple config data for sender
   - rc.local                 - /etc/rc.local - start script
   templates - files for www
-    - ciroff.html     - site after circuit off
-    - ciron.html      - site after circuit on
-    - index.html      - site when realtime mode and circuit on
-    - index2.html     - site when economic mode or no connection
-    - indexoff.html   - site when realtime mode and circuit off
-    - restart.html    - site after restart script
-    - reset.html      - site after reset device
+    - ciroff.html     - site after circuit off (frontend in polish language)
+    - ciron.html      - site after circuit on (frontend in polish language)
+    - index.html      - site when realtime mode and circuit on (frontend in polish language)
+    - index2.html     - site when economic mode or no connection (frontend in polish language)
+    - indexoff.html   - site when realtime mode and circuit off (frontend in polish language)
+    - restart.html    - site after restart script (frontend in polish language)
+    - reset.html      - site after reset device (frontend in polish language)
     css     - bootstrap files
     fonts   - fonts files
     js      - js files
