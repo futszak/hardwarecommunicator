@@ -307,17 +307,23 @@ def sendergps(tcpCliSock):
                     data = data1 + data2 + (" ") + devicestate()
                     ldata = data2
                     sendingdata(tcpCliSock, data)
+                    if config.config['debug']:
+                        logsend('return from sendingdata (data from GPS)')
             else:
                 if config.config['GPSFAKEDATA']:
                     d0 = str(int(time.time()))+(" 21.")
                     d1 = str(random.random())[2:11]+(" 52.")
                     d2 = str(random.random())[2:11]+(" ")+devicestate()
                     sendingdata(tcpCliSock, d0+d1+d2)
+                    if config.config['debug']:
+                        logsend('return from sendingdata (data from random)')
                     time.sleep(1)
             if int(time.time()) > alive:
                 logsend('alive temp='+temperature())
                 d = str(int(time.time()))+(" 99.999999999 99.999999999 ")
                 sendingdata(tcpCliSock, d+devicestate())
+                if config.config['debug']:
+                    logsend('return from sendingdata (perdiodic fake data)')
 
 
 
