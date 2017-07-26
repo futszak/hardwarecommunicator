@@ -1,11 +1,22 @@
 # hardwarecommunicator
 
 Directory contains files:
-  - communicator             - script in python for server side
-  - communicatorconfig.py    - config for communicator
+  - communicator             - script in python for server
+  - communicatorconfig.py    - simple config for communicator
   - sender                   - script in python for remote device
-  - senderconfig.py          - configuration data for sender
+  - senderconfig.py          - simple config data for sender
   - rc.local                 - /etc/rc.local - start script
+  /templates - files for www
+    - ciroff.html     - site after circuit off
+    - ciron.html      - site after circuit on
+    - index.html      - site when realtime mode and circuit on
+    - index2.html     - site when economic mode or no connection
+    - indexoff.html   - site when realtime mode and circuit off
+    - restart.html    - site after restart script
+    - reset.html      - site after reset device
+    /css     - bootstrap files
+    /fonts   - fonts files
+    /js      - js files
 
 1.Hardware (remote device side)
 - OrangePI light with Armbian (linux)
