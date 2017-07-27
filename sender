@@ -233,7 +233,7 @@ def sendingdata(tcpCliSock, data):
             if config.config['debug']:
                 logsend('sendingdata:  withdatapacket = '+str(withdatapacket))
                 logsend(str(jsn)+' = jsn time = '+str(int(time.time())))
-            tm = int(time.time())
+        tm = int(time.time())
         if (jsn < tm) or (math.fabs(jsn-tm) > (config.config['jsonlengt']+20)):
             if config.config['debug']:
                 logsend('sendingdata:  json packet is FULL')
