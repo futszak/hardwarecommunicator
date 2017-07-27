@@ -169,12 +169,12 @@ def switch(tcpCliSock):
         return(True)
     if recv == ("off"):
         logsend("circuit off message was recieved")
-        gpio.output(port.PA1, gpio.LOW)
+        gpio.output(port.PG9, gpio.LOW)
         circuiton = False
         return(True)
     if recv == ("on"):
         logsend("circuit ON !!!")
-        gpio.output(port.PA1, gpio.HIGH)
+        gpio.output(port.PG9, gpio.HIGH)
         circuiton = True
         return(True)
     if recv == ("restart"):
@@ -233,7 +233,7 @@ def sendingdata(tcpCliSock, data):
             if config.config['debug']:
                 logsend('sendingdata:  withdatapacket = '+str(withdatapacket))
                 logsend(str(jsn)+' = jsn time = '+str(int(time.time())))
-        tm = int(time.time())
+            tm = int(time.time())
         if (jsn < tm) or (math.fabs(jsn-tm) > (config.config['jsonlengt']+20)):
             if config.config['debug']:
                 logsend('sendingdata:  json packet is FULL')
@@ -333,8 +333,8 @@ def main():
     tcpCliSock = None
     logsend("GPIO initializing...")
     gpio.init()
-    gpio.setcfg(port.PA1, gpio.OUTPUT)
-    gpio.output(port.PA1, gpio.HIGH)
+    gpio.setcfg(port.PG9, gpio.OUTPUT)
+    gpio.output(port.PG9, gpio.HIGH)
     for res in socket.getaddrinfo(config.config['HOST'], config.config['PORT'], socket.AF_UNSPEC, socket.SOCK_STREAM):
         af, socktype, proto, canonname, sa = res
         try:
