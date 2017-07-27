@@ -40,4 +40,5 @@ Directory contains files:
 - Autorestart device after time if no data (from GPS)
 - Restart script and reset device on demand
 
-More details on http://sender.tkruk.it/
+Installation guide (device)
+http://sender.tkruk.it/index.php/2017/07/27/installation-guide-device-side/
