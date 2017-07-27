@@ -15,7 +15,6 @@ import json
 
 
 # global variables
-#
 count = 0
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 app = Flask(__name__)
