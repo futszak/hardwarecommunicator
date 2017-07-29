@@ -16,7 +16,7 @@ import json
 
 # global variables
 count = 0
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
 app = Flask(__name__)
 ldtime = 0
 sstatechange = False  # Switch State Changed
@@ -93,24 +93,8 @@ def today():
     return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
 
 
-@app.route("/yesterday")
-def yesterday():
-    webtimereset(config.config['WEBtimeout'])
-    tblrender("templates/history.html", 2)
-    # return render_template('history.html')
-    return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
-
-
 @app.route("/month")
 def month():
-    webtimereset(config.config['WEBtimeout'])
-    tblrender("templates/history.html", 3)
-    # return render_template('history.html')
-    return send_from_directory('/home/futszak/gr0m/templates', 'history.html')
-
-
-@app.route("/pmonth")
-def pmonth():
     webtimereset(config.config['WEBtimeout'])
     tblrender("templates/history.html", 3)
     # return render_template('history.html')
@@ -139,7 +123,7 @@ def createmaplink(timestamp):
     cond = " WHERE time="+str(timestamp)+str(";")
     cur.execute("SELECT * FROM "+config.config['DB_TABLENAME']+cond)
     repl = (cur.fetchall()[0])
-    logsend(str(repl))
+    # logsend(str(repl))
     return(bgn+repl[3]+","+repl[2]+mdl+repl[3]+","+repl[2]+end+config.config['googlekey'])
 
 
@@ -230,13 +214,31 @@ def testmaxtime(fetch):
     return(lt)
 
 
+def firstsecond(tsmp):
+    day = (dt.datetime.fromtimestamp(tsmp)).strftime('%d')
+    month = (dt.datetime.fromtimestamp(tsmp)).strftime('%m')
+    year = (dt.datetime.fromtimestamp(tsmp)).strftime('%Y')
+    d = dt.date(int(year), int(month), int(day))
+    return(int(time.mktime(d.timetuple())))
+
+
 def tblrender(filename, sw=0):
+    # 0 - last 100
+    # 1 - today
+    # 3 - all
     db = MySQLdb.connect(config.config['DB_HOSTNAME'],
                          config.config['DB_USERNAME'],
                          config.config['DB_PASSWORD'],
                          config.config['DB_DBNAME'])
     cur = db.cursor()
-    ord = " ORDER BY time DESC"
+    # logsend(sw)
+    ord = " ORDER BY time DESC limit 6000"
+    if sw == 1:
+        cond = " WHERE time>"+str(firstsecond(int(time.time())))
+        ord = cond+" ORDER BY time DESC"
+    if sw == 3:
+        ord = " ORDER BY time DESC"
+    # logsend(ord)
     cur.execute("SELECT * FROM "+config.config['DB_TABLENAME']+ord)
     begin = """<!doctype html>
     <html>
@@ -312,56 +314,18 @@ def tblrender(filename, sw=0):
                 return()
     plik = open(filename, 'wb')
     l2 = 0
-    count = 0
     plik.write(begin)
-    # set this day, month
-    day = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%d')
-    month = (dt.datetime.fromtimestamp(int(time.time()))).strftime('%m')
     for row in fetch:
-        hum = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%Y-%m-%d %H:%M')
+        h = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%Y-%m-%d %H:%M')
         l1 = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%H%M')
         if not (l1 == l2):
             r1 = str(row[1])
-            rowday = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%d')
-            rowmonth = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%m')
-            if (sw == 1):
-                if (rowday == day and row[2] != "99.999999999"):
-                    plik.write(p1)
-                    plik.write(t1+hum+t2)
-                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
-                    plik.write(t1+row[4]+t2)
-                    plik.write(p2)
-            if (sw == 2):
-                if (rowday == (int(day)-1) and row[2] != "99.999999999"):
-                    plik.write(p1)
-                    plik.write(t1+hum+t2)
-                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
-                    plik.write(t1+row[4]+t2)
-                    plik.write(p2)
-            if (sw == 3):
-                if (month == rowmonth and row[2] != "99.999999999"):
-                    plik.write(p1)
-                    plik.write(t1+hum+t2)
-                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
-                    plik.write(t1+row[4]+t2)
-                    plik.write(p2)
-            if (sw == 4):
-                if (month == (rowmonth-1) and row[2] != "99.999999999"):
-                    plik.write(p1)
-                    plik.write(t1+hum+t2)
-                    plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
-                    plik.write(t1+row[4]+t2)
-                    plik.write(p2)
-            if (sw == 0 and row[2] != "99.999999999"):
-                count += 1
+            if (row[2] != "99.999999999" and row[2] != "n/a"):
                 plik.write(p1)
-                plik.write(t1+hum+t2)
+                plik.write(t1+h+t2)
                 plik.write(t1+a11+r1+a12+row[2]+" "+row[3]+a2+t2)
                 plik.write(t1+row[4]+t2)
                 plik.write(p2)
-                if count > 100:
-                    endoftablerender(plik, db)
-                    return()
         l2 = (dt.datetime.fromtimestamp(int(row[1]))).strftime('%H%M')
     endoftablerender(plik, db)
     return()
