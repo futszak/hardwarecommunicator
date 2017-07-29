@@ -225,8 +225,8 @@ def sendingdata(tcpCliSock, data):
             logsend('sendingdata:  no livestream and append data')
         li.append(data)
         data1 = data.split(" ")
-        # logsend(data1[1])
         if ((data1[1]) != "99.999999999") or ((data1[1]) != "n/a"):
+            # logsend(data1[1])
             if config.config['debug']:
                 logsend('sendingdata:  packet is TRUE')
             withdatapacket += 1
