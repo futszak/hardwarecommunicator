@@ -209,7 +209,7 @@ def logsend(s):
 def testmaxtime(fetch):
     lt = 0
     for row in fetch:
-        if (lt < int(row[1]) and row[2] != "99.999999999"):
+        if (lt < int(row[1]) and row[2] != "99.999999999" and row[2] != "n/a"):
             lt = int(row[1])
     return(lt)
 
