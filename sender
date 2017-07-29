@@ -225,15 +225,14 @@ def sendingdata(tcpCliSock, data):
             logsend('sendingdata:  no livestream and append data')
         li.append(data)
         data1 = data.split(" ")
-        if ((data1[1]) != "99.999999999") or ((data1[1]) != "n/a"):
-            # logsend(data1[1])
+        if ((data1[1]) != "99.999999999") and ((data1[1]) != "n/a"):
             if config.config['debug']:
                 logsend('sendingdata:  packet is TRUE')
             withdatapacket += 1
-            if config.config['debug']:
-                logsend('sendingdata:  withdatapacket = '+str(withdatapacket))
-                logsend(str(jsn)+' = jsn time = '+str(int(time.time())))
-            tm = int(time.time())
+        if config.config['debug']:
+            logsend(str(jsn)+' = jsn time = '+str(int(time.time())))
+            logsend(str(datapacket)+' = data wdata = '+str(withdatapacket))
+        tm = int(time.time())
         if (jsn < tm) or (math.fabs(jsn-tm) > (config.config['jsonlengt']+20)):
             if config.config['debug']:
                 logsend('sendingdata:  json packet is FULL')
@@ -241,6 +240,8 @@ def sendingdata(tcpCliSock, data):
                 if config.config['debug']:
                     logsend('sendingdata: in json no packet with real data')
                 datapacket += 1
+            else:
+                datapacket = 0
             withdatapacket = 0
             if datapacket > 4:
                 if config.config['debug']:
