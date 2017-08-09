@@ -115,7 +115,6 @@ def loaddata(tcpCliSock):
 
 
 def entry(packet):
-    logsend(packet)
     if config.config['debug']:
         logsend('Creating json packet')
     entry = {
