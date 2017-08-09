@@ -18,5 +18,6 @@ config = {
     'nextgps': 5,
     'reporting_url': 'http://servername/insert.php',
     'httpsend': True,
+    'deviceid': 1,
     'waitingforserveranswer': 20
 }
