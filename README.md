@@ -4,6 +4,7 @@ Directory contains files:
   - communicator             - script in python for server
   - communicatorconfig.py    - simple config for communicator
   - sender                   - script in python for remote device
+  - stester                  - sender simulator (for linux on pc)
   - senderconfig.py          - simple config data for sender
   - rc.local                 - /etc/rc.local - start script
   templates - files for www
@@ -14,6 +15,9 @@ Directory contains files:
     - indexoff.html   - site when realtime mode and circuit off (frontend in polish language)
     - restart.html    - site after restart script (frontend in polish language)
     - reset.html      - site after reset device (frontend in polish language)
+  web - directory with php script on server
+    - insert.php      - data reciever
+    - config.php      - configuration file for php scripts
     css     - bootstrap files
     fonts   - fonts files
     js      - js files
