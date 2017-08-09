@@ -197,15 +197,22 @@ def siteremote(cmmd, device):
 def period(clientsock):
     global sstatechange
     global sstate
-    if sstate == 2:
-        clientsock.send("restart")
-    if sstate == 3:
-        clientsock.send("reset")
-    if sstate == 0:
-        clientsock.send("off")
+    global lastwebtime
+    if sstatechange:
+        if sstate == 2:
+            clientsock.send("restart")
+        if sstate == 3:
+            clientsock.send("reset")
+        if sstate == 0:
+            clientsock.send("off")
+        else:
+            clientsock.send("on")
+        sstatechange = False
     else:
-        clientsock.send("on")
-    sstatechange = False
+        if (int(str(time.time())[0:10])) > lastwebtime:
+            clientsock.send("no")
+        else:
+            clientsock.send("ok")
 
 
 def frontend():
@@ -381,7 +388,6 @@ def dbwrite(time, longitude, latitude, state, x, conn):
 
 
 def gpsmode(clientsock):
-    global lastwebtime
     global sstatechange
     global rsstate
     if config.config['debug']:
@@ -441,13 +447,7 @@ def gpsmode(clientsock):
                 conn.close()
                 break
                 logsend("main loop return")
-        if sstatechange:
-            period(clientsock)
-        else:
-            if (int(str(time.time())[0:10])) > lastwebtime:
-                clientsock.send("no")
-            else:
-                clientsock.send("ok")
+        period(clientsock)
 
 
 def handler(clientsock, addr):
