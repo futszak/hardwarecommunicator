@@ -11,6 +11,7 @@ config = {
     'DB_USERNAME': "db_username",
     'DB_PASSWORD': "db_password",
     'DB_DBNAME': "db_name",
+    'DB_STATES': "db_states",
     'DB_TABLENAME': "gps",
     'WEBtimeout': 60,
     'googlekey': "google api key",
