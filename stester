@@ -267,16 +267,16 @@ def sendingdata(tcpCliSock, data):
             else:
                 if config.config['debug']:
                     logsend('sendingdata:  going to sending compress data')
-                #  send http
+                #  send ing data via http
                 if config.config['httpsend']:
                     logsend(httpsend(compdata))
                 else:
                     try:
-                        #  wysyłanie pakietu danych na server
+                        #  sending 2 server via tcpCliSock
                         tcpCliSock.send(compdata)
                         if config.config['debug']:
                             logsend("send data OK")
-                        #  odbiór odpowiedzi z servera komendą switch
+                        #  recieving data from server
                         if switch(tcpCliSock):
                             if config.config['debug']:
                                 logsend("Data was recieved by server")
