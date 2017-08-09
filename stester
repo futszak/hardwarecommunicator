@@ -122,6 +122,7 @@ def entry(packet):
         "longitude": packet.split()[1],
         "latitude": packet.split()[2],
         "state": str(packet.split()[3]),
+        "deviceid": str(packet.split()[4]),
     }
     return(entry)
 
