@@ -43,28 +43,28 @@ def maine():
 @app.route("/engineoff")
 def engoff():
     webtimereset(config.config['WEBtimeout'])
-    siteremote("off")
+    siteremote("off", 11)
     return render_template('ciroff.html')
 
 
 @app.route("/restart")
 def restart():
     webtimereset(config.config['WEBtimeout'])
-    siteremote("restart")
+    siteremote("restart", 11)
     return render_template('restart.html')
 
 
 @app.route("/reset")
 def resetdevice():
     webtimereset(config.config['WEBtimeout'])
-    siteremote("reset")
+    siteremote("reset", 11)
     return render_template('reset.html')
 
 
 @app.route("/engineon")
 def engon():
     webtimereset(config.config['WEBtimeout'])
-    siteremote("on")
+    siteremote("on", 11)
     return render_template('ciron.html')
 
 
@@ -152,26 +152,46 @@ def deviceon(cmmd):
             return(True)
 
 
-def siteremote(cmmd):
+def siteremote(cmmd, device):
     global sstatechange
     global sstate
+    conn = MySQLdb.connect(config.config['DB_HOSTNAME'],
+                             config.config['DB_USERNAME'],
+                             config.config['DB_PASSWORD'],
+                             config.config['DB_DBNAME'])
+    x = conn.cursor()
+    a1 = "INSERT INTO "
+    st = config.config['DB_STATES']+" (device,state1,changed) VALUES ("
+    su = config.config['DB_STATES']+" (device,command,changed) VALUES ("
+    p = ","
+    cc = ('"'+cmmd+'"')
     if (cmmd == ("off")):
         sstatechange = True
         sstate = False
+        logsend(a1+st+str(device)+p+"0"+p+'1);')
+        x.execute(a1+st+str(device)+p+"0"+p+'1);')
         logsend("setenginestate -> OFF")
     if cmmd == ("on"):
         sstatechange = True
         sstate = True
+        logsend(a1+st+str(device)+p+"1"+p+'1);')
+        x.execute(a1+st+str(device)+p+"1"+p+'1);')
         logsend("setenginestate -> ON")
     if cmmd == ("restart"):
         sstatechange = True
         sstate = 2
+        logsend(a1+su+str(device)+p+cc+p+'1);')
+        x.execute(a1+su+str(device)+p+cc+p+'1);')
         logsend("sending restart command")
     if cmmd == ("reset"):
         sstatechange = True
         sstate = 3
+        logsend(a1+su+str(device)+p+cc+p+'1);')
+        x.execute(a1+su+str(device)+p+cc+p+'1);')
         logsend("sending RESET command !!!")
-
+    conn.commit()
+    x.close()
+    conn.close()
 
 
 def period(clientsock):
@@ -339,6 +359,7 @@ def endoftablerender(plik, db):
     plik.write(end)
     plik.close()
     return()
+
 
 def dbwrite(time, longitude, latitude, state, x, conn):
     #  creating database command
