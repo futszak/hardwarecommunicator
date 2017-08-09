@@ -1,5 +1,5 @@
 <?php
-require_once('config.php');
+if (file_exists('config.php')) { include('config.php'); } else { die("no config file"); }
 $postdata = file_get_contents("php://input");
 // dekompresja danych
 $postdata2 = bzdecompress($postdata);
