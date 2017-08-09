@@ -19,7 +19,6 @@ count = 0
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
 app = Flask(__name__)
 ldtime = 0
-sstatechange = False  # Switch State Changed
 sstate = 1  # Switch State
 rsstate = True  # Remote switch state
 lastposition = "https://www.google.com"
@@ -123,7 +122,6 @@ def createmaplink(timestamp):
     cond = " WHERE time="+str(timestamp)+str(";")
     cur.execute("SELECT * FROM "+config.config['DB_TABLENAME']+cond)
     repl = (cur.fetchall()[0])
-    # logsend(str(repl))
     return(bgn+repl[3]+","+repl[2]+mdl+repl[3]+","+repl[2]+end+config.config['googlekey'])
 
 
@@ -153,8 +151,6 @@ def deviceon(cmmd):
 
 
 def siteremote(cmmd, device):
-    global sstatechange
-    global sstate
     conn = MySQLdb.connect(config.config['DB_HOSTNAME'],
                              config.config['DB_USERNAME'],
                              config.config['DB_PASSWORD'],
@@ -166,26 +162,18 @@ def siteremote(cmmd, device):
     p = ","
     cc = ('"'+cmmd+'"')
     if (cmmd == ("off")):
-        sstatechange = True
-        sstate = False
         logsend(a1+st+str(device)+p+"0"+p+'1);')
         x.execute(a1+st+str(device)+p+"0"+p+'1);')
         logsend("setenginestate -> OFF")
     if cmmd == ("on"):
-        sstatechange = True
-        sstate = True
         logsend(a1+st+str(device)+p+"1"+p+'1);')
         x.execute(a1+st+str(device)+p+"1"+p+'1);')
         logsend("setenginestate -> ON")
     if cmmd == ("restart"):
-        sstatechange = True
-        sstate = 2
         logsend(a1+su+str(device)+p+cc+p+'1);')
         x.execute(a1+su+str(device)+p+cc+p+'1);')
         logsend("sending restart command")
     if cmmd == ("reset"):
-        sstatechange = True
-        sstate = 3
         logsend(a1+su+str(device)+p+cc+p+'1);')
         x.execute(a1+su+str(device)+p+cc+p+'1);')
         logsend("sending RESET command !!!")
@@ -195,19 +183,32 @@ def siteremote(cmmd, device):
 
 
 def period(clientsock):
-    global sstatechange
-    global sstate
     global lastwebtime
-    if sstatechange:
-        if sstate == 2:
-            clientsock.send("restart")
-        if sstate == 3:
-            clientsock.send("reset")
-        if sstate == 0:
-            clientsock.send("off")
+    db = MySQLdb.connect(config.config['DB_HOSTNAME'],
+                         config.config['DB_USERNAME'],
+                         config.config['DB_PASSWORD'],
+                         config.config['DB_DBNAME'])
+    cur = db.cursor()
+    sta = config.config['DB_STATES']
+    ord = (" ORDER BY time DESC LIMIT 1")
+    exe = ("SELECT changed,device,state1,command FROM "+sta+ord)
+    cur.execute(exe)
+    fetch = cur.fetchall()
+    if ((fetch[0])[0]):
+        if ((fetch[0])[3]) is not None:
+            clientsock.send((fetch[0])[3])
         else:
-            clientsock.send("on")
-        sstatechange = False
+            if ((fetch[0])[2]):
+                clientsock.send("on")
+            else:
+                clientsock.send("off")
+        i = "INSERT INTO "
+        s = ((fetch[0])[2])
+        d = ((fetch[0])[1])
+        exe = (i+sta+' (changed,device,state1) VALUES (0,'+str(d)+','+str(s)+');')
+        cur.execute(exe)
+        db.commit()
+        db.close()
     else:
         if (int(str(time.time())[0:10])) > lastwebtime:
             clientsock.send("no")
@@ -258,14 +259,12 @@ def tblrender(filename, sw=0):
                          config.config['DB_PASSWORD'],
                          config.config['DB_DBNAME'])
     cur = db.cursor()
-    # logsend(sw)
     ord = " ORDER BY time DESC limit 6000"
     if sw == 1:
         cond = " WHERE time>"+str(firstsecond(int(time.time())))
         ord = cond+" ORDER BY time DESC"
     if sw == 3:
         ord = " ORDER BY time DESC"
-    # logsend(ord)
     cur.execute("SELECT * FROM "+config.config['DB_TABLENAME']+ord)
     begin = """<!doctype html>
     <html>
@@ -380,15 +379,11 @@ def dbwrite(time, longitude, latitude, state, x, conn):
         logsend("sending to base "+time+" "+longitude+" "+latitude+" "+state)
     cmmd1 = str(curexecute+time+curepoint+longitude+curepoint+latitude)
     cmmd2 = str(curepoint+state+cureend)
-    # renderurlmap(time, longitude, latitude)
-    #  sending command with data to database
     x.execute(cmmd1+cmmd2)
-    # database commit
     conn.commit()
 
 
 def gpsmode(clientsock):
-    global sstatechange
     global rsstate
     if config.config['debug']:
         logsend('Enter GPS mode...')
