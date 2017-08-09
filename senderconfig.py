@@ -16,5 +16,7 @@ config = {
     'GPSFAKEDATA': True,
     'alive': 60,
     'nextgps': 5,
+    'reporting_url': 'http://servername/insert.php',
+    'httpsend': True,
     'waitingforserveranswer': 20
 }
