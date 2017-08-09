@@ -64,9 +64,9 @@ def devicestate():
     if config.config['debug']:
         logsend('Enter devicestate procedure')
     if circuiton:
-        return("eON_temp="+temperature())
+        return("eON_temp="+temperature()+(" ")+id())
     else:
-        return("eOFF_temp="+temperature())
+        return("eOFF_temp="+temperature()+(" ")+id())
 
 
 def savedata(data):
@@ -115,6 +115,7 @@ def loaddata(tcpCliSock):
 
 
 def entry(packet):
+    logsend(packet)
     if config.config['debug']:
         logsend('Creating json packet')
     entry = {
@@ -318,7 +319,7 @@ def sendergps(tcpCliSock):
             if config.config['GPSFAKEDATA']:
                 d0 = str(int(time.time()))+(" 21.")
                 d1 = str(random.random())[2:11]+(" 52.")
-                d2 = str(random.random())[2:11]+(" ")+devicestate()+(" ")+id()
+                d2 = str(random.random())[2:11]+(" ")+devicestate()
                 sendingdata(tcpCliSock, d0+d1+d2)
                 if config.config['debug']:
                     logsend('return from sendingdata (data from random)')
