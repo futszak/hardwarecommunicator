@@ -196,7 +196,6 @@ def siteremote(cmmd, device):
 
 
 def period(clientsock):
-    global lastwebtime
     db = MySQLdb.connect(config.config['DB_HOSTNAME'],
                          config.config['DB_USERNAME'],
                          config.config['DB_PASSWORD'],
@@ -226,7 +225,7 @@ def period(clientsock):
         db.commit()
         db.close()
     else:
-        if (int(str(time.time())[0:10])) > lastwebtime:
+        if (int(str(time.time())[0:10])) > wtime():
             clientsock.send("no")
         else:
             clientsock.send("ok")
@@ -239,8 +238,7 @@ def frontend():
 
 
 def webtimereset(timeadd):
-    global lastwebtime
-    lastwebtime = int(str(time.time())[0:10])+timeadd
+    wtime(int(str(time.time())[0:10])+timeadd)
     if config.config['debug']:
         logsend("webtime was reset")
 
