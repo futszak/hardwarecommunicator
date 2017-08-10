@@ -1,5 +1,6 @@
 <?php
-if (file_exists('config.php')) { include('config.php'); } else { die("no config file"); }
+if (file_exists('config.php')) { include('./config.php'); } else { die("no config file"); }
+if (file_exists('config.php')) { include('./state.php'); } else { die("no state.php file"); }
 $postdata = file_get_contents("php://input");
 // dekompresja danych
 $postdata2 = bzdecompress($postdata);
@@ -35,7 +36,9 @@ while ( count($data) > $a) {
 $dbq = $dbq.";";
 // connection to database
 $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+$lz = new state($db_host,$db_user,$db_pass,$db_name);
 if ($conn->connect_errno) { echo("db_error"); exit(); }
-if ($conn->query($dbq) === TRUE) { echo("ok"); }
-$conn->close()
+$conn->query($dbq);
+echo($lz->message());
+$conn->close();
 ?>
