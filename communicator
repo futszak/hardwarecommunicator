@@ -473,6 +473,7 @@ def handler(clientsock, addr):
             if not data:
                 break
             if data == "gps":
+                # login in the future
                 gpsmode(clientsock)
     # end this thread
         if config.config['debug']:
