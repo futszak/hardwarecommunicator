@@ -157,26 +157,18 @@ def siteremote(cmmd, device):
                              config.config['DB_DBNAME'])
     x = conn.cursor()
     a1 = "INSERT INTO "
-    st = config.config['DB_STATES']+" (device,state1,changed) VALUES ("
+    st = config.config['DB_STATES']+" (device,state,changed) VALUES ("
     su = config.config['DB_STATES']+" (device,command,changed) VALUES ("
     p = ","
     cc = ('"'+cmmd+'"')
     if (cmmd == ("off")):
-        logsend(a1+st+str(device)+p+"0"+p+'1);')
         x.execute(a1+st+str(device)+p+"0"+p+'1);')
-        logsend("setenginestate -> OFF")
     if cmmd == ("on"):
-        logsend(a1+st+str(device)+p+"1"+p+'1);')
         x.execute(a1+st+str(device)+p+"1"+p+'1);')
-        logsend("setenginestate -> ON")
     if cmmd == ("restart"):
-        logsend(a1+su+str(device)+p+cc+p+'1);')
         x.execute(a1+su+str(device)+p+cc+p+'1);')
-        logsend("sending restart command")
     if cmmd == ("reset"):
-        logsend(a1+su+str(device)+p+cc+p+'1);')
         x.execute(a1+su+str(device)+p+cc+p+'1);')
-        logsend("sending RESET command !!!")
     conn.commit()
     x.close()
     conn.close()
@@ -191,21 +183,24 @@ def period(clientsock):
     cur = db.cursor()
     sta = config.config['DB_STATES']
     ord = (" ORDER BY time DESC LIMIT 1")
-    exe = ("SELECT changed,device,state1,command FROM "+sta+ord)
+    exe = ("SELECT changed,device,state,command FROM "+sta+ord)
     cur.execute(exe)
     fetch = cur.fetchall()
     if ((fetch[0])[0]):
         if ((fetch[0])[3]) is not None:
+            logsend("sending "+(fetch[0])[3]+" command")
             clientsock.send((fetch[0])[3])
         else:
             if ((fetch[0])[2]):
+                logsend("setenginestate -> ON")
                 clientsock.send("on")
             else:
+                logsend("setenginestate -> OFF")
                 clientsock.send("off")
         i = "INSERT INTO "
         s = ((fetch[0])[2])
         d = ((fetch[0])[1])
-        exe = (i+sta+' (changed,device,state1) VALUES (0,'+str(d)+','+str(s)+');')
+        exe = (i+sta+' (changed,device,state) VALUES (0,'+str(d)+','+str(s)+');')
         cur.execute(exe)
         db.commit()
         db.close()
