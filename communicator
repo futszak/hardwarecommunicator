@@ -151,6 +151,26 @@ def deviceon(cmmd):
             return(True)
 
 
+def wtime(t=0):
+    db = MySQLdb.connect(config.config['DB_HOSTNAME'],
+                         config.config['DB_USERNAME'],
+                         config.config['DB_PASSWORD'],
+                         config.config['DB_DBNAME'])
+    cur = db.cursor()
+    sta = config.config['DB_WTIME']
+    if (t == 0):
+        exe = ("SELECT webtime FROM "+sta)
+        cur.execute(exe)
+        fetch = cur.fetchall()
+        db.close()
+        return((fetch[0])[0])
+    else:
+        exe = ("UPDATE livestream SET webtime="+str(t)+" LIMIT 1")
+        cur.execute(exe)
+        db.commit()
+        db.close()
+
+
 def siteremote(cmmd, device):
     conn = MySQLdb.connect(config.config['DB_HOSTNAME'],
                              config.config['DB_USERNAME'],
@@ -171,7 +191,7 @@ def siteremote(cmmd, device):
     if cmmd == ("reset"):
         x.execute(a1+su+str(device)+p+cc+p+'1);')
     conn.commit()
-    x.close()
+    # x.close()
     conn.close()
 
 
@@ -515,7 +535,6 @@ def main():
     logsend ("".join('Connection from address: ')+str(addr[0]))
     logsend ("".join('Connection from port: ')+str(addr[1]))
     webtimereset(config.config['WEBtimeout'])
-    # logsend(lastwebtime)
     thread.start_new_thread(handler, (clientsock, addr))
 
 
