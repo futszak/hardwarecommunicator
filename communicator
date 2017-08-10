@@ -144,7 +144,8 @@ def deviceon(cmmd):
     if cmmd:
         ldtime = int(str(time.time())[0:10])
     else:
-        if ((ldtime + config.config['WEBtesttimeout']) < int(str(time.time())[0:10])):
+        t = int(str(time.time())[0:10])
+        if ((ldtime + config.config['WEBtesttimeout']) < t):
             return(False)
         else:
             return(True)
