@@ -13,6 +13,7 @@ config = {
     'DB_DBNAME': "db_name",
     'DB_STATES': "db_states",
     'DB_TABLENAME': "gps",
+    'DB_WTIME': "livestream",    
     'WEBtimeout': 60,
     'googlekey': "google api key",
     'WEBtesttimeout': 5
