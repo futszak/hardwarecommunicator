@@ -208,7 +208,7 @@ def sendingdata(tcpCliSock, data):
         logsend('Enter sendingdata procedure data = '+str(data))
     dataheader = str("short ")
     datasend = dataheader+data
-    # livestream = True
+    livestream = True
     if tcpCliSock == ("offline"):
         livestream = False
     if livestream:
@@ -217,6 +217,10 @@ def sendingdata(tcpCliSock, data):
         if config.config['httpsend']:
             logsend("preparing short json packet")
             compdata = bz2.compress(datasend)
+            hs = httpsend(compdata)
+            logsend(hs)
+            if (hs == "error"):
+                logsend("error with http "+datasend)
             logsend(httpsend(compdata))
         else:
             try:
@@ -281,8 +285,10 @@ def sendingdata(tcpCliSock, data):
                     logsend('sendingdata:  going to sending compress data')
                 #  send ing data via http
                 if config.config['httpsend']:
-                    logsend(httpsend(compdata))
-                    loaddata()
+                    hs = httpsend(compdata)
+                    logsend(hs)
+                    if (hs != "error"):
+                        loaddata()
                 else:
                     try:
                         #  sending 2 server via tcpCliSock
