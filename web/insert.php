@@ -4,7 +4,15 @@ if (file_exists('config.php')) { include('./state.php'); } else { die("no state.
 $postdata = file_get_contents("php://input");
 // dekompresja danych
 $postdata2 = bzdecompress($postdata);
-// dzieli na rekordy
+if (substr($postdata2, 0, 5) == "short")
+{
+// enter to creation one record database query
+$p2 = explode(" ", $postdata2);
+$p=",";
+$dbq = ("");
+$dbq = "INSERT INTO `".$db_table."` (`time`, `longitude`, `latitude`, `state`, `deviceid`) VALUES (".$p2[1].$p.$p2[2].$p.$p2[3].$p."'".$p2[4]."'".$p.$p2[5].");";
+} else {
+// enter to creation many records database query
 $data = explode("}, {", $postdata2);
 $dbq = ("");
 $a = 0;
@@ -33,7 +41,7 @@ while ( count($data) > $a) {
 		$dbq = $dbq."'".$pr."'";
 		$b++; }
 		$dbq = $dbq.")"; }
-$dbq = $dbq.";";
+$dbq = $dbq.";"; }
 // connection to database
 $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
 $lz = new state($db_host,$db_user,$db_pass,$db_name);
