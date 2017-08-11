@@ -205,25 +205,31 @@ def sendingdata(tcpCliSock, data):
         livestream = False
     dataheader = str("short ")
     datasend = dataheader+data
+    livestream = True
     if livestream:
         if config.config['debug']:
             logsend('sendingdata:  livestream is TRUE')
-        try:
-            if config.config['debug']:
-                logsend('sendingdata:  try sending')
-            tcpCliSock.send(datasend)
-            if config.config['debug']:
-                logsend('sendingdata:  sending OK')
-            if config.config['debug']:
-                logsend("small packet was send to server...")
-            if not switch(tcpCliSock):
+        if config.config['httpsend']:
+            logsend("preparing short json packet")
+            compdata = bz2.compress("short "+data)
+            logsend(httpsend(compdata))
+        else:
+            try:
+                if config.config['debug']:
+                    logsend('sendingdata:  try sending')
+                tcpCliSock.send(datasend)
+                if config.config['debug']:
+                    logsend('sendingdata:  sending OK')
+                if config.config['debug']:
+                    logsend("small packet was send to server...")
+                if not switch(tcpCliSock):
+                    restart()
+            except socket.error, msg:
+                if config.config['debug']:
+                    logsend('sendingdata:  socket ERROR')
+                logsend("socket errot -> "+str(msg))
+                logsend("lost packet -> "+str(datasend))
                 restart()
-        except socket.error, msg:
-            if config.config['debug']:
-                logsend('sendingdata:  socket ERROR')
-            logsend("socket errot -> "+str(msg))
-            logsend("lost packet -> "+str(datasend))
-            restart()
     else:
         if config.config['debug']:
             logsend('sendingdata:  no livestream and append data')
