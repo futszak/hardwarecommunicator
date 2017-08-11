@@ -352,7 +352,7 @@ def sendergps(tcpCliSock):
                 time.sleep(1)
 
 
-def main():
+def tcpinit():
     tcpCliSock = None
     for res in socket.getaddrinfo(config.config['HOST'], config.config['PORT'], socket.AF_UNSPEC, socket.SOCK_STREAM):
         af, socktype, proto, canonname, sa = res
@@ -391,11 +391,17 @@ def main():
         restart()
     logsend(data)
     if data == ("gps mode OK"):
-        #  print("przeskok")
         sendergps(tcpCliSock)
-    tcpCliSock.close()
+        tcpCliSock.close()
     logsend('remote server closed')
     restart()
+
+
+def main():
+    if config.config['httpsend']:
+        sendergps("http")
+    else:
+        tcpinit()
 
 
 if __name__ == '__main__':
