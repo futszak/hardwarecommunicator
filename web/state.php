@@ -17,7 +17,7 @@ class state {
     if ($ret['command']) { $state = $ret['command']; }
     else { if ($ret['state']) { $state = "on"; } else { $state = "off"; } }
     mysqli_query($this->handle,'INSERT INTO states ( state,changed,device,line ) VALUES ( '.$ret['state'].',0,'.$ret['device'].','.$ret['line'].')');
-  } else { $state = "ok"; }
+  } else { $state = "no"; }
     return $state; }
 }
 ?>
