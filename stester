@@ -333,7 +333,6 @@ def sendergps(tcpCliSock):
     global alive
     if config.config['debug']:
         logsend('Enter senderGPS procedure')
-    logsend("sendergps lets'go")
     while True:
         if int(time.time()) > alive:
             logsend('alive temp='+temperature())
@@ -399,8 +398,10 @@ def tcpinit():
 
 def main():
     if config.config['httpsend']:
+        logsend("sendergps in HTTP mode lets'go")
         sendergps("http")
     else:
+        logsend("sendergps in TCP mode lets'go")
         tcpinit()
 
 
