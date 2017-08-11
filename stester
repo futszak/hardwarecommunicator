@@ -81,7 +81,7 @@ def savedata(data):
         logsend(str(filename)+" with data saved")
 
 
-def loaddata(tcpCliSock):
+def loaddata(tcpCliSock='0'):
     global tryrestart
     if config.config['debug']:
         logsend('Enter to loaddata procedure...')
@@ -95,20 +95,25 @@ def loaddata(tcpCliSock):
             logsend('File '+a+' opened...')
         tekst = plik.read()
         plik.close()
-        try:
-            tcpCliSock.send(tekst)
-            if config.config['debug']:
-                logsend('File '+a+' sended')
-            os.remove(a)
-            logsend(str(a)+" deleted")
-        except:
-            if config.config['debug']:
-                logsend('Error manipulation with file '+a+'')
-                return()
-        if switch(tcpCliSock):
-            pass
+        if config.config['httpsend']:
+            if httpsend(tekst) != "error":
+                os.remove(a)
+                logsend(str(a)+" deleted")
         else:
-            return()
+            try:
+                tcpCliSock.send(tekst)
+                if config.config['debug']:
+                    logsend('File '+a+' sended')
+                os.remove(a)
+                logsend(str(a)+" deleted")
+            except:
+                if config.config['debug']:
+                    logsend('Error manipulation with file '+a+'')
+                    return()
+            if switch(tcpCliSock):
+                pass
+            else:
+                return()
         if config.config['debug']:
             logsend('remote info from server recieved')
     tryrestart = 0
@@ -188,7 +193,7 @@ def httpsend(data):
     try:
         r = req.post(config.config['reporting_url'], data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     except:
-        exit("error with http sending")
+        return("error")
     return(r.text)
 
 
@@ -201,17 +206,17 @@ def sendingdata(tcpCliSock, data):
     global withdatapacket
     if config.config['debug']:
         logsend('Enter sendingdata procedure data = '+str(data))
-    if tcpCliSock == ("offline"):
-        livestream = False
     dataheader = str("short ")
     datasend = dataheader+data
-    livestream = True
+    # livestream = True
+    if tcpCliSock == ("offline"):
+        livestream = False
     if livestream:
         if config.config['debug']:
             logsend('sendingdata:  livestream is TRUE')
         if config.config['httpsend']:
             logsend("preparing short json packet")
-            compdata = bz2.compress("short "+data)
+            compdata = bz2.compress(datasend)
             logsend(httpsend(compdata))
         else:
             try:
@@ -277,6 +282,7 @@ def sendingdata(tcpCliSock, data):
                 #  send ing data via http
                 if config.config['httpsend']:
                     logsend(httpsend(compdata))
+                    loaddata()
                 else:
                     try:
                         #  sending 2 server via tcpCliSock
