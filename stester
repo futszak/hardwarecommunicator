@@ -96,6 +96,8 @@ def loaddata(tcpCliSock='0'):
         tekst = plik.read()
         plik.close()
         if config.config['httpsend']:
+            hs = httpsend(tekst)
+            switch(hs, 1)
             if httpsend(tekst) != "error":
                 os.remove(a)
                 logsend(str(a)+" deleted")
@@ -141,23 +143,27 @@ def decoder(data):
         print data[a]['time']
 
 
-def switch(tcpCliSock):
+def switch(tcpCliSock, h=False):
     if config.config['debug']:
         logsend("enter switch procedure")
     global livestream
     global circuiton
     wh = True
     servanswer = 0
-    while wh:
-        try:
-            recv = tcpCliSock.recv(1024)
-            wh = False
-        except:
-            logsend("waiting for server answer")
-            servanswer += 1
-            if (servanswer > config.config['waitingforserveranswer']):
-                restart()
-            time.sleep(0.1)
+    if h:
+        if (tcpCliSock != "error"):
+            recv = tcpCliSock
+    else:
+        while wh:
+            try:
+                recv = tcpCliSock.recv(1024)
+                wh = False
+            except:
+                logsend("waiting for server answer")
+                servanswer += 1
+                if (servanswer > config.config['waitingforserveranswer']):
+                    restart()
+                time.sleep(0.1)
     if recv == ("ok"):
         livestream = True
         if config.config['debug']:
@@ -219,9 +225,9 @@ def sendingdata(tcpCliSock, data):
             compdata = bz2.compress(datasend)
             hs = httpsend(compdata)
             logsend(hs)
+            switch(hs, 1)
             if (hs == "error"):
                 logsend("error with http "+datasend)
-            logsend(httpsend(compdata))
         else:
             try:
                 if config.config['debug']:
@@ -286,6 +292,7 @@ def sendingdata(tcpCliSock, data):
                 #  send ing data via http
                 if config.config['httpsend']:
                     hs = httpsend(compdata)
+                    switch(hs, 1)
                     logsend(hs)
                     if (hs != "error"):
                         loaddata()
