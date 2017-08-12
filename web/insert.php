@@ -6,13 +6,14 @@ $postdata = file_get_contents("php://input");
 $postdata2 = bzdecompress($postdata);
 if (substr($postdata2, 0, 5) == "short")
 {
-// enter to creation one record database query
 $p2 = explode(" ", $postdata2);
 $p=",";
 $dbq = ("");
 $dbq = "INSERT INTO `".$db_table."` (`time`, `longitude`, `latitude`, `state`, `deviceid`) VALUES (".$p2[1].$p.$p2[2].$p.$p2[3].$p."'".$p2[4]."'".$p.$p2[5].");";
+// echo($dbq);
 } else {
-// enter to creation many records database query
+// echo($postdata2);
+// dzieli na rekordy
 $data = explode("}, {", $postdata2);
 $dbq = ("");
 $a = 0;
