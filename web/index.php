@@ -12,6 +12,7 @@
     $lz = new state($db_host,$db_user,$db_pass,$db_name);
     $a = ($_GET['action']);
     if (!empty($_GET['action'])) { echo($lz->comm($a)); sleep(1); header("Refresh:0; url=index.php"); }
+    $lz->close();
     ?>
 
 </head>
@@ -34,6 +35,7 @@
                     <?php
                     if ($lz->circuit()) { echo('<div class="alert alert-success"><strong>Sukces!</strong> Obwód jest podłączony :)'); }
                     else { echo('<div class="alert alert-danger"><strong>Sukces!</strong> Obwód jest odłaczony :('); }
+                    $lz->close();
                     ?>
                   </div>
                   </div>
@@ -83,7 +85,6 @@
       <!-- /#page-wrapper -->
   </div>
   <!-- /#wrapper -->
-<h2> console </h2>
 
   <!-- jQuery -->
   <script src="js/jquery.js"></script>
