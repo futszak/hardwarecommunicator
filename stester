@@ -134,25 +134,19 @@ def entry(packet):
     return(entry)
 
 
-def decoder(data):
-    print (data)
-    for a in range(0, len(data)):
-        print (" ")
-        print data[a]['latitude']
-        print data[a]['longitude']
-        print data[a]['time']
-
-
 def switch(tcpCliSock, h=False):
     if config.config['debug']:
         logsend("enter switch procedure")
+        if h:
+            logsend("in http mode")
     global livestream
     global circuiton
     wh = True
     servanswer = 0
     if h:
-        if (tcpCliSock != "error"):
-            recv = tcpCliSock
+        if (tcpCliSock == "error"):
+            return(False)
+        recv = tcpCliSock
     else:
         while wh:
             try:
@@ -164,6 +158,8 @@ def switch(tcpCliSock, h=False):
                 if (servanswer > config.config['waitingforserveranswer']):
                     restart()
                 time.sleep(0.1)
+    if config.config['debug']:
+        logsend("recv = "+recv)
     if recv == ("ok"):
         livestream = True
         if config.config['debug']:
