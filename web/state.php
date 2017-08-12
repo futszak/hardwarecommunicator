@@ -21,24 +21,26 @@ class state {
     }
 
   function message() {
-    $q = mysqli_query($this->handle,'SELECT action FROM commands ORDER BY time DESC LIMIT 1;');
-    $a = mysqli_fetch_assoc($q); $a = $a['action'];
-    if ($a == "on" || $a == "off" || $a == "restart" || $a == "reset") {
-     mysqli_query($this->handle,"INSERT INTO commands (action) VALUES ('done');");
-     return($a); } else { return("no"); }
-    }
+      $q = mysqli_query($this->handle,'SELECT action FROM commands ORDER BY time DESC LIMIT 1;');
+      $a = mysqli_fetch_assoc($q); $a = $a['action'];
+      // return("dupa");
+      if ($a == "on" || $a == "off" || $a == "restart" || $a == "reset") {
+      mysqli_query($this->handle,"INSERT INTO commands (action) VALUES ('done');");
+      return($a); } else {
+      $w = mysqli_query($this->handle,'SELECT webtime FROM livestream');
+      $a = mysqli_fetch_assoc($w);
+      $webtime = 60; // to removed
+      $a = $a['webtime'];
+      if ((time()-$a) > $webtime) { return("no"); } else { return("ok"); }  }
+  }
 
-    // function message1() {
-    //   $ret = array();
-    //   $q = mysqli_query($this->handle,'SELECT time,state,command,id,device,line,changed FROM states ORDER BY time DESC LIMIT 1;');
-    //   while ($txt = mysqli_fetch_assoc($q)) { $list[] = $txt; }
-    //   $ret = ($list[0]);
-    //   if ($ret['changed']) {
-    //   if ($ret['command']) { $state = $ret['command']; }
-    //   else { if ($ret['state']) { $state = "on"; } else { $state = "off"; } }
-    //   mysqli_query($this->handle,'INSERT INTO states ( state,changed,device,line ) VALUES ( '.$ret['state'].',0,'.$ret['device'].','.$ret['line'].')');
-    //   } else { $state = "off"; }
-    //   return $state; }
-
+  function refresh() {
+    $a = time();
+    mysqli_query($this->handle,'UPDATE livestream SET webtime = '.$a.' LIMIT 1');
+    $q = mysqli_query($this->handle,'SELECT webtime FROM livestream');
+    $a = mysqli_fetch_assoc($q);
+    $a = $a['webtime'];
+    $a = time()-$a;
+    return($a);
+  }
 }
-?>
