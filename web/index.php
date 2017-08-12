@@ -10,6 +10,7 @@
     if (file_exists('config.php')) { include('./config.php'); } else { die("no config file"); }
     if (file_exists('config.php')) { include('./state.php'); } else { die("no state.php file"); }
     $lz = new state($db_host,$db_user,$db_pass,$db_name);
+    $lz->refresh();
     if (!empty($_GET['action'])) { $a = ($_GET['action']); echo($lz->comm($a)); sleep(2); header("Refresh:0; url=index.php"); }
     ?>
 
