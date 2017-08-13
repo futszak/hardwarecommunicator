@@ -4,7 +4,7 @@ if (file_exists('config.php')) { include('./state.php'); } else { die("no state.
 $postdata = file_get_contents("php://input");
 // dekompresja danych
 $postdata2 = bzdecompress($postdata);
-if (substr($postdata2, 0, 5) == "short")
+if (substr($postdata2, 0, 5) == "short" or substr($postdata2, 0, 5) == "sh0rt")
 {
 $p2 = explode(" ", $postdata2);
 $p=",";
@@ -15,7 +15,7 @@ $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
 $lz = new state($db_host,$db_user,$db_pass,$db_name);
 if ($conn->connect_errno) { echo("db_error"); exit(); }
 $conn->query($dbq);
-echo($lz->message());
+if (substr($postdata2, 0, 5) == "sh0rt") { echo($lz->fmessage()); } else { echo($lz->message()); }
 $conn->close();
 } else {
 // division on records
