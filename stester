@@ -17,7 +17,7 @@ import requests as req
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP logging
 sock.settimeout(5)
-livestream = False
+livestream = True
 li = []
 jsn = int(time.time()) + config.config['jsonlengt']
 circuiton = True
