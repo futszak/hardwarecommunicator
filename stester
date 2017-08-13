@@ -171,11 +171,13 @@ def switch(tcpCliSock, h=False):
             logsend("livestream is False")
         return(True)
     if recv == ("off"):
+        livestream = True
         logsend("SYM: circuit off message was recieved")
         # gpio.output(port.PG9, gpio.LOW)
         circuiton = False
         return(True)
     if recv == ("on"):
+        livestream = True
         logsend("SYM: circuit ON !!!")
         # gpio.output(port.PG9, gpio.HIGH)
         circuiton = True
