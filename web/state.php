@@ -38,6 +38,12 @@ class state {
       return($a['action']); }  }
   }
 
+  function fmessage() {
+    $q = 'SELECT time,action FROM commands WHERE (action="on" or action="off") ORDER BY time DESC LIMIT 1';
+    $w = mysqli_query($this->handle,$q);
+    $a = mysqli_fetch_assoc($w);
+    return($a['action']); }
+
   function refresh() {
     $a = time();
     mysqli_query($this->handle,'UPDATE livestream SET webtime = '.$a.' LIMIT 1');
