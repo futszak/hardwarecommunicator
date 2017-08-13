@@ -10,10 +10,15 @@ $p2 = explode(" ", $postdata2);
 $p=",";
 $dbq = ("");
 $dbq = "INSERT INTO `".$db_table."` (`time`, `longitude`, `latitude`, `state`, `deviceid`) VALUES (".$p2[1].$p.$p2[2].$p.$p2[3].$p."'".$p2[4]."'".$p.$p2[5].");";
-// echo($dbq);
+// connection to database for short data
+$conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+$lz = new state($db_host,$db_user,$db_pass,$db_name);
+if ($conn->connect_errno) { echo("db_error"); exit(); }
+$conn->query($dbq);
+echo($lz->message());
+$conn->close();
 } else {
-// echo($postdata2);
-// dzieli na rekordy
+// division on records
 $data = explode("}, {", $postdata2);
 $dbq = ("");
 $a = 0;
@@ -42,12 +47,12 @@ while ( count($data) > $a) {
 		$dbq = $dbq."'".$pr."'";
 		$b++; }
 		$dbq = $dbq.")"; }
-$dbq = $dbq.";"; }
-// connection to database
+$dbq = $dbq.";";
+// connection to database for long data
 $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
 $lz = new state($db_host,$db_user,$db_pass,$db_name);
 if ($conn->connect_errno) { echo("db_error"); exit(); }
 $conn->query($dbq);
 echo($lz->message());
-$conn->close();
+$conn->close(); }
 ?>
