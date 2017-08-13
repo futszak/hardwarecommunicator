@@ -23,9 +23,10 @@
               <!-- /.row 1 -->
               <div class="row">
                   <div class="col-lg-12 text-center">
-                            <div class="alert alert-success">
-                                <strong>Sukces!</strong> Urządzenie jest połączone :)
-                            </div>
+                    <?php
+                    if ($lz->livestream()) {echo('<div class="alert alert-success"><strong>Sukces!</strong> Urządzenie jest połączone :)</div>'); }
+                    else {echo('<div class="alert alert-danger"><strong>Porażka</strong> Urządzenie nie jest połączone :(</div>'); }
+                    ?>
                   </div>
               </div>
               <!-- /.row 2 -->
@@ -52,29 +53,36 @@
                       </div>
                 </div>
                 <!-- /.between components -->
-                <div class="col-lg-2 text-center">
+                <?php
+                if ($lz->livestream()) {echo('<div class="col-lg-2 text-center">
                   <a class="btn btn-lg btn-danger">
-                      <a href="?action=off"><strong>Odłącz obwód</strong></a>
+                      <a href="ciroff.php?action=off"><strong>Odłącz obwód</strong></a>
                   </a>
                 </div>
                 <!-- /.between components -->
                 <div class="col-lg-2 text-center">
                   <a class="btn btn-lg btn-success">
-                      <a href="?action=on"><strong>Podłącz obwód</strong></a>
+                      <a href="ciron.php?action=on"><strong>Podłącz obwód</strong></a>
                   </a>
                 </div>
                 <!-- /.between components -->
                 <div class="col-lg-2 text-center">
                   <a class="btn btn-lg btn-danger">
-                      <a href="?action=restart"><strong>Retartuj skrypt</strong></a>
+                      <a href="restart.php?action=restart"><strong>Retartuj skrypt</strong></a>
                   </a>
                 </div>
                 <!-- /.between components -->
                 <div class="col-lg-2 text-center">
                   <a class="btn btn-lg btn-danger">
-                      <a href="?action=reset"><strong>RESETUJ urządzenie !!!</strong></a>
+                      <a href="reset.php?action=reset"><strong>RESETUJ urządzenie !!!</strong></a>
                   </a>
-                </div>
+                </div>'); } else {echo('<div class="col-lg-6 text-center">
+                  <div class="alert alert-default">
+                      <strong>Nie możesz wykonywać operacji na urządzeniu :(</strong>
+                  </div>
+                </div>'); }
+                 ?>
+
             </div>
               <!-- /.row -->
           </div>
@@ -89,8 +97,6 @@
 
   <!-- Bootstrap Core JavaScript -->
   <script src="js/bootstrap.min.js"></script>
-
-
 
 </body>
 
