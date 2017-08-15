@@ -84,7 +84,6 @@ class state {
     $z = $z-1;
     $lp = $lp+1;
     }
-    // echo($ret);
   }
 
 }
