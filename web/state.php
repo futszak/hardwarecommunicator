@@ -63,25 +63,28 @@ class state {
     if ($t < 5) { return (1); } else { return (0); }
   }
 
-  function tblrender($of=0, $z = 1000) {
-    if ($of) { $ti = $of; } else
-    {
+  function tblrender($z = 100)
+  {
     $q = mysqli_query($this->handle,'SELECT time FROM gps ORDER BY time DESC LIMIT 1;');
     $a = mysqli_fetch_assoc($q);
     $ti = $a['time'];
-    }
     $ti1 = $ti;
     $dr = strftime("%d",$ti1);
     $ret = ('');
-    while ($z > 0 && strftime("%d",$ti1) == $dr) {
+    $lp = 1;
+    while ($z > 0)
+    {
     $q = mysqli_query($this->handle,'SELECT time,longitude,latitude,state FROM gps WHERE time<'.$ti.' ORDER BY time DESC LIMIT 1;');
     $a = mysqli_fetch_assoc($q);
-    $str = "<tr><th>".strftime("%H:%M:%S %d-%m-%Y",$a['time'])." ".$a['time']."</th><th>".$a['longitude']." ".$a['latitude']."</th><th>".$a['state']."</th></tr>";
+    $str = "<tr><th>$lp</th><th>".strftime("%H:%M:%S %d-%m-%Y",$a['time'])."</th><th>".$a['longitude']." ".$a['latitude']."</th><th>".$a['state']."</th></tr>";
     $dr = strftime("%d",$a['time']);
-    $ret = $ret.$str;
     $ti = $a['time']-60;
-    $z = $z-1; }
-    return($ret);
+    if ($ti<0) { break; }
+    echo($str);
+    $z = $z-1;
+    $lp = $lp+1;
+    }
+    // echo($ret);
   }
 
 }
