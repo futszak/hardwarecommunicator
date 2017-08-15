@@ -49,7 +49,7 @@
                 <!-- /.between components -->
                 <div class="col-lg-2 text-center">
                       <div class="alert alert-info">
-                          <a href="history"><strong>Zobacz historię</strong> położenia auta</a>
+                          <a href="history.php"><strong>Zobacz historię</strong> położenia auta</a>
                       </div>
                 </div>
                 <!-- /.between components -->
@@ -91,7 +91,16 @@
       <!-- /#page-wrapper -->
   </div>
   <!-- /#wrapper -->
+<h2>Console</h2>
 
+<?php
+
+print_r($_SERVER['REMOTE_ADDR']);
+
+$log = new log();
+$log->send('tresc logow');
+
+ ?>
   <!-- jQuery -->
   <script src="js/jquery.js"></script>
 
