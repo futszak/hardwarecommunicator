@@ -17,7 +17,7 @@ class state {
     return ($a); }
   function comm($action) {
     if ($action == "on" || $action == "off" || $action == "restart" || $action == "reset")
-      { mysqli_query($this->handle,"INSERT INTO commands (action) VALUES ('".$action."');"); }
+      { mysqli_query($this->handle,"INSERT INTO commands (action,ip) VALUES ('".$action."','".$_SERVER['REMOTE_ADDR']."');"); }
     }
 
   function message() {
@@ -25,7 +25,7 @@ class state {
       $a = mysqli_fetch_assoc($q); $a = $a['action'];
       // return("dupa");
       if ($a == "on" || $a == "off" || $a == "restart" || $a == "reset") {
-      mysqli_query($this->handle,"INSERT INTO commands (action) VALUES ('done');");
+      mysqli_query($this->handle,"INSERT INTO commands (action,ip) VALUES ('done',');");
       return($a); } else {
       $w = mysqli_query($this->handle,'SELECT webtime FROM livestream');
       $a = mysqli_fetch_assoc($w);
@@ -47,6 +47,8 @@ class state {
   function refresh() {
     $a = time();
     mysqli_query($this->handle,'UPDATE livestream SET webtime = '.$a.' LIMIT 1');
+    $log = new log();
+    $log->send('UPDATE livestream SET webtime = '.$a.' LIMIT 1');
     $q = mysqli_query($this->handle,'SELECT webtime FROM livestream');
     $a = mysqli_fetch_assoc($q);
     $a = $a['webtime'];
@@ -60,4 +62,40 @@ class state {
     $t = time() - $a['time'];
     if ($t < 5) { return (1); } else { return (0); }
   }
+
+  function tblrender($of=0, $z = 1000) {
+    if ($of) { $ti = $of; } else
+    {
+    $q = mysqli_query($this->handle,'SELECT time FROM gps ORDER BY time DESC LIMIT 1;');
+    $a = mysqli_fetch_assoc($q);
+    $ti = $a['time'];
+    }
+    $ti1 = $ti;
+    $dr = strftime("%d",$ti1);
+    $ret = ('');
+    while ($z > 0 && strftime("%d",$ti1) == $dr) {
+    $q = mysqli_query($this->handle,'SELECT time,longitude,latitude,state FROM gps WHERE time<'.$ti.' ORDER BY time DESC LIMIT 1;');
+    $a = mysqli_fetch_assoc($q);
+    $str = "<tr><th>".strftime("%H:%M:%S %d-%m-%Y",$a['time'])." ".$a['time']."</th><th>".$a['longitude']." ".$a['latitude']."</th><th>".$a['state']."</th></tr>";
+    $dr = strftime("%d",$a['time']);
+    $ret = $ret.$str;
+    $ti = $a['time']-60;
+    $z = $z-1; }
+    return($ret);
+  }
+
 }
+
+ class log {
+
+   function __construct() {
+   }
+
+   function send($a) {
+     $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+     $msg = "Krypt0n-php ".time()." ".$a;
+     $len = strlen($msg);
+     socket_sendto($sock, $msg, $len, 0, '127.0.0.1', 514);
+     socket_close($sock);
+   }
+ }
