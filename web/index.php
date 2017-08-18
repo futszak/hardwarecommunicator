@@ -53,8 +53,10 @@
                       </div>
                 </div>
                 <!-- /.between components -->
-                <?php
-                if ($lz->livestream()) {echo('<div class="col-lg-2 text-center">
+<?php
+          if ($lz->livestream())
+          {
+          echo('<div class="col-lg-2 text-center">
                   <a class="btn btn-lg btn-danger">
                       <a href="ciroff.php?action=off"><strong>Odłącz obwód</strong></a>
                   </a>
@@ -76,12 +78,17 @@
                   <a class="btn btn-lg btn-danger">
                       <a href="reset.php?action=reset"><strong>RESETUJ urządzenie !!!</strong></a>
                   </a>
-                </div>'); } else {echo('<div class="col-lg-6 text-center">
-                  <div class="alert alert-default">
-                      <strong>Nie możesz wykonywać operacji na urządzeniu :(</strong>
-                  </div>
-                </div>'); }
-                 ?>
+                </div>');
+            }
+              else
+            {
+            echo('<div class="col-lg-6 text-center">
+                    <div class="alert alert-default">
+                        <strong>Nie możesz wykonywać operacji na urządzeniu :(</strong>
+                    </div>
+                  </div>');
+            }
+?>
 
             </div>
               <!-- /.row -->
@@ -95,12 +102,12 @@
 
 <?php
 
-print_r($_SERVER['REMOTE_ADDR']);
+  print_r($_SERVER['REMOTE_ADDR']);
 
-$log = new log();
-$log->send('tresc logow');
+  $log = new log();
+  $log->send('tresc logow');
 
- ?>
+?>
   <!-- jQuery -->
   <script src="js/jquery.js"></script>
 
