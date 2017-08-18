@@ -45,20 +45,40 @@
       <!-- Bootstrap Core JavaScript -->
       <script src="js/bootstrap.min.js"></script>
 
-  <table style="width:100%">
-  <tr>
-  <th>Lp</th>
-  <th>Data i godzina</th>
-  <th>Wspolrzedne geograficzne</th>
-  <th>Stan obwodu</th>
-  </tr>
+    <table style="width:100%">
+    <tr>
+    <th>Lp</th>
+    <th>Data i godzina</th>
+    <th>Wspolrzedne geograficzne</th>
+    <th>Stan obwodu</th>
+    </tr>
 
 <?php
-if (file_exists('config.php')) { include('./config.php'); } else { die("no config file"); }
-if (file_exists('config.php')) { include('./state.php'); } else { die("no state.php file"); }
-$lz = new state($db_host,$db_user,$db_pass,$db_name);
-if ($_GET['render']) { $prt = ($lz->tblrender($_GET['render'])); } else {
-$prt = ($lz->tblrender()); }
- ?>
+    if (file_exists('config.php'))
+    {
+      include('./config.php');
+    }
+    else
+    {
+      die("no config file");
+    }
+    if (file_exists('config.php'))
+    {
+      include('./state.php');
+    }
+    else
+    {
+      die("no state.php file");
+    }
+    $lz = new state($db_host,$db_user,$db_pass,$db_name);
+    if ($_GET['render'])
+    {
+      $prt = ($lz->tblrender($_GET['render']));
+    }
+    else
+    {
+      $prt = ($lz->tblrender());
+    }
+?>
 
-  </table></body>
+    </table></body>
