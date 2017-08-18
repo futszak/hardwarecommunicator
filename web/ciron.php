@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Python Flask Bucket List App</title>
+    <title>controlling</title>
     <meta http-equiv="refresh" content="1; url=/">
     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
@@ -36,13 +36,15 @@
   <!-- Bootstrap Core JavaScript -->
   <script src="js/bootstrap.min.js"></script>
 
-  <?php
+<?php
   if (file_exists('config.php')) { include('./config.php'); } else { die("no config file"); }
   if (file_exists('config.php')) { include('./state.php'); } else { die("no state.php file"); }
   $lz = new state($db_host,$db_user,$db_pass,$db_name);
-  // $lz->refresh();
-  if (!empty($_GET['action'])) { $a = ($_GET['action']); echo($lz->comm($a)); header("Refresh:2; url=index.php"); }
-  ?>
+  if (!empty($_GET['action']))
+  {
+    $a = ($_GET['action']); echo($lz->comm($a)); header("Refresh:2; url=index.php");
+  }
+?>
 
 </body>
 
