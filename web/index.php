@@ -23,19 +23,37 @@
               <!-- /.row 1 -->
               <div class="row">
                   <div class="col-lg-12 text-center">
-                    <?php
-                    if ($lz->livestream()) {echo('<div class="alert alert-success"><strong>Sukces!</strong> Urządzenie jest połączone :)</div>'); }
-                    else {echo('<div class="alert alert-danger"><strong>Porażka</strong> Urządzenie nie jest połączone :(</div>'); }
-                    ?>
+<?php
+              if ($lz->livestream())
+              {
+                echo('<div class="alert alert-success"><strong>Sukces!</strong> Urządzenie jest połączone :)</div>');
+              }
+              else
+              {
+                echo('<div class="alert alert-danger"><strong>Porażka</strong> Urządzenie nie jest połączone :(</div>');
+              }
+?>
                   </div>
               </div>
               <!-- /.row 2 -->
               <div class="row">
                   <div class="col-lg-12 text-center">
-                    <?php
-                    if ($lz->circuit()) { echo('<div class="alert alert-success"><strong>Sukces!</strong> Obwód jest podłączony :)'); }
-                    else { echo('<div class="alert alert-danger"><strong>Sukces!</strong> Obwód jest odłaczony :('); }
-                    ?>
+<?php
+                    if ($lz->livestream())
+                    {
+                      if ($lz->circuit())
+                      {
+                        echo('<div class="alert alert-success"><strong>Sukces!</strong> Obwód jest podłączony :)');
+                      }
+                      else
+                      {
+                        echo('<div class="alert alert-danger"><strong>Sukces!</strong> Obwód jest odłaczony :(');
+                      }
+                    }
+                    else {
+                      echo('<div class="alert alert-danger"><strong>Porażka</strong> Bieżący stan obwodu nie jest znany :(');
+                    }
+?>
                   </div>
                   </div>
               </div>
