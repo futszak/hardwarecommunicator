@@ -34,6 +34,26 @@ class state
     }
   }
 
+  function maplink($timestamp) {
+    $bgn = "https://maps.googleapis.com/maps/api/staticmap?center=";
+    $mdl = "&zoom=15&size=600x600&markers=color:red%7Clabel:D%7C";
+    $end = "&key=";
+    $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps WHERE time='.$timestamp.' LIMIT 1;');
+    $a = mysqli_fetch_assoc($q);
+    $lola = $a['latitude'].",".$a['longitude'];
+    return ($bgn.$lola.$mdl.$lola.$end."AIzaSyDI39Yn7r299GZTDbuHhn9lsVL70BGmV4A");
+  }
+
+  function lastmaplink() {
+    $bgn = "https://maps.googleapis.com/maps/api/staticmap?center=";
+    $mdl = "&zoom=15&size=600x600&markers=color:red%7Clabel:D%7C";
+    $end = "&key=";
+    $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps ORDER BY time DESC LIMIT 1;');
+    $a = mysqli_fetch_assoc($q);
+    $lola = $a['latitude'].",".$a['longitude'];
+    return ($bgn.$lola.$mdl.$lola.$end."AIzaSyDI39Yn7r299GZTDbuHhn9lsVL70BGmV4A");
+  }
+
   function message()
   {
     $q = mysqli_query($this->handle,'SELECT action FROM commands ORDER BY time DESC LIMIT 1;');
@@ -112,7 +132,9 @@ class state
     {
       $q = mysqli_query($this->handle,'SELECT time,longitude,latitude,state FROM gps WHERE time<'.$ti.' ORDER BY time DESC LIMIT 1;');
       $a = mysqli_fetch_assoc($q);
-      $str = "<tr><th>$lp</th><th>".strftime("%H:%M:%S %d-%m-%Y",$a['time'])."</th><th>".$a['longitude']." ".$a['latitude']."</th><th>".$a['state']."</th></tr>";
+      $time = $a['time'];
+      $link = '<a href="'.$this->maplink($time).'">';
+      $str = "<tr><th>$lp</th><th>".strftime("%H:%M:%S %d-%m-%Y",$a['time'])."</th><th>".$link.$a['longitude']." ".$a['latitude']."</a></th><th>".$a['state']."</th></tr>";
       $dr = strftime("%d",$a['time']);
       $ti = $a['time']-60;
       if ($ti<0)
