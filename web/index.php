@@ -61,7 +61,7 @@
               <div class="row">
                 <div class="col-lg-2 text-center">
                       <div class="alert alert-info">
-                          <a href="mapa"><strong>Kliknij</strong> aby zobaczyć ostatnią pozycję auta</a>
+                          <a href="<?php echo($lz->lastmaplink())?>"><strong>Kliknij</strong> aby zobaczyć ostatnią pozycję auta</a>
                       </div>
                 </div>
                 <!-- /.between components -->
@@ -121,9 +121,11 @@
 <?php
 
   print_r($_SERVER['REMOTE_ADDR']);
+  // print_r($lz->maplink(1503336097));
 
   $log = new log();
   $log->send('tresc logow');
+
 
 ?>
   <!-- jQuery -->
