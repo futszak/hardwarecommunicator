@@ -54,6 +54,13 @@ class state
     return ($bgn.$lola.$mdl.$lola.$end."AIzaSyDI39Yn7r299GZTDbuHhn9lsVL70BGmV4A");
   }
 
+  function lastposition() {
+    $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps ORDER BY time DESC LIMIT 1;');
+    $a = mysqli_fetch_assoc($q);
+    $lola = $a['latitude'].",".$a['longitude'];
+    return ($lola);
+  }
+
   function message()
   {
     $q = mysqli_query($this->handle,'SELECT action FROM commands ORDER BY time DESC LIMIT 1;');
