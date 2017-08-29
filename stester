@@ -29,8 +29,8 @@ alive = int(time.time()) + config.config['alive']
 
 
 def resetdevice():
-    logsend("RESET MACHINE...")
-    subprocess.call("/sbin/reboot")
+    logsend("SYMULATED RESET MACHINE...")
+    # subprocess.call("/sbin/reboot")
 
 
 def restart():
