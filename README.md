@@ -18,6 +18,8 @@ Directory contains files:
   web - directory with php script on server
     - insert.php      - data reciever
     - config.php      - configuration file for php scripts
+    - jsout.php       - interface for data from mysql on server to JS (longitude and latitude)
+    - mapajs.html     - map in JavaScript
     css     - bootstrap files
     fonts   - fonts files
     js      - js files
