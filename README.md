@@ -45,6 +45,3 @@ Directory contains files:
 - Autorestart program after time (in config) if problem with connection
 - Autorestart device after time if no data (from GPS)
 - Restart script and reset device on demand
-
-Installation guide (device)
-http://sender.tkruk.it/index.php/2017/07/27/installation-guide-device-side/
