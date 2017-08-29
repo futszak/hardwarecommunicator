@@ -26,6 +26,8 @@ tryrestart = 0
 withdatapacket = 0
 datapacket = 0
 alive = int(time.time()) + config.config['alive']
+slongitude = 5538987
+slatitude = 2311325
 
 
 def resetdevice():
@@ -333,8 +335,21 @@ def id():
     return(config.config['deviceid'])
 
 
+def slong():
+    global slongitude
+    slongitude = slongitude+int((random.random())*10000)
+    return(str(slongitude)[0:7])
+
+
+def slat():
+    global slatitude
+    slatitude = slatitude+int((random.random())*10000)
+    return(str(slatitude)[0:7])
+
+
 def sendergps(tcpCliSock):
     global alive
+    global slatitude
     if config.config['debug']:
         logsend('Enter senderGPS procedure')
     while True:
@@ -347,8 +362,8 @@ def sendergps(tcpCliSock):
         else:
             if config.config['GPSFAKEDATA']:
                 d0 = str(int(time.time()))+(" 21.")
-                d1 = str(random.random())[2:11]+(" 52.")
-                d2 = str(random.random())[2:11]+(" ")+devicestate()
+                d1 = slong()+(" 52.")
+                d2 = slat()+(" ")+devicestate()
                 sendingdata(tcpCliSock, d0+d1+d2)
                 if config.config['debug']:
                     logsend('return from sendingdata (data from random)')
