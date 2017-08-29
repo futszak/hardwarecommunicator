@@ -61,7 +61,7 @@
               <div class="row">
                 <div class="col-lg-2 text-center">
                       <div class="alert alert-info">
-                          <a href="<?php echo($lz->lastmaplink())?>"><strong>Kliknij</strong> aby zobaczyć ostatnią pozycję auta</a>
+                          <a href="mapajs.html"><strong>Mapa</strong></a>
                       </div>
                 </div>
                 <!-- /.between components -->
@@ -116,18 +116,22 @@
       <!-- /#page-wrapper -->
   </div>
   <!-- /#wrapper -->
-<h2>Console</h2>
+<!-- <h2>Console</h2> -->
 
 <?php
 
-  print_r($_SERVER['REMOTE_ADDR']);
+  // print_r($_SERVER['REMOTE_ADDR']);
+  // echo(time());
+  // echo date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']);
   // print_r($lz->maplink(1503336097));
 
-  $log = new log();
-  $log->send('tresc logow');
+  // $log = new log();
+  // $log->send('tresc logow');
+
 
 
 ?>
+<!-- <iframe src="mapajs.html" width="1020" height="520"></iframe> -->
   <!-- jQuery -->
   <script src="js/jquery.js"></script>
 
