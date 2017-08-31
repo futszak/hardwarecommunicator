@@ -1,0 +1,20 @@
+config = {
+    'HOST': 'x.x.x.x',
+    'PORT': 11568,
+    'BUFSIZ': 1024,
+    'TMOUT': 1,
+    'RESTART': 0,
+    'MYHOSTNAME': 'MYHOSTNAME',
+    'MYHOSTPASS': 'MYHOSTPASS',
+    'PROCNAME': "gps-sender",
+    'UDP_IP': "x.x.x.x",
+    'UDP_PORT': 514,
+    'jsonlengt': 60,
+    'savefilename': 'saved',
+    'trytorestart': 2,
+    'debug': False,
+    'GPSFAKEDATA': False,
+    'alive': 15,
+    'nextgps': 5,
+    'waitingforserveranswer': 20
+}
