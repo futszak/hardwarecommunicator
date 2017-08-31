@@ -1,0 +1,386 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+from gps3 import gps3
+import socket
+import sys
+import time
+import math
+import os
+import json
+import bz2
+import random
+import senderconfig as config
+import subprocess
+from pyA20.gpio import gpio
+from pyA20.gpio import port
+
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP logging
+sock.settimeout(5)
+livestream = False
+li = []
+jsn = int(time.time()) + config.config['jsonlengt']
+circuiton = True
+tryrestart = 0
+withdatapacket = 0
+datapacket = 0
+alive = int(time.time()) + config.config['alive']
+
+
+def resetdevice():
+    logsend("RESET MACHINE...")
+    subprocess.call("/sbin/reboot")
+
+
+def restart():
+    time.sleep(config.config['trytorestart'])
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
+
+
+def temperature():
+    if config.config['debug']:
+        logsend('Enter temperature')
+    """Read device temperature."""
+    f = open('/sys/devices/virtual/thermal/thermal_zone0/temp')
+    t = str(f.readline())
+    temp = (t[0]+t[1])
+    f.close()
+    return(temp)
+
+
+def logsend(s):
+    """Write log."""
+    global alive
+    nt = (config.config['PROCNAME'])+" "+str((int(time.time())))+': '
+    ip = config.config['UDP_IP']
+    port = config.config['UDP_PORT']
+    try:
+        sock.sendto((nt+str(s)+'\n'), (ip, port))
+        alive = int(time.time()) + config.config['alive']
+    except:
+        time.sleep(10)
+        restart()
+
+
+def devicestate():
+    global circuiton
+    if config.config['debug']:
+        logsend('Enter devicestate procedure')
+    if circuiton:
+        return("eON_temp="+temperature())
+    else:
+        return("eOFF_temp="+temperature())
+
+
+def savedata(data):
+    """Save compresed packets to files because no Internet"""
+    if config.config['debug']:
+        logsend('Data will be saved...')
+    filename = (config.config['savefilename'])+str(int(time.time()))
+    plik = open(filename, 'wb')
+    plik.write(data)
+    plik.close()
+    if config.config['debug']:
+        logsend(str(filename)+" with data saved")
+
+
+def loaddata(tcpCliSock):
+    global tryrestart
+    if config.config['debug']:
+        logsend('Enter to loaddata procedure...')
+    li = []
+    for a in os.listdir('.'):
+        if (a[:(len(config.config['savefilename']))]) == (config.config['savefilename']):
+            li.append(a)
+    for a in li:
+        plik = open(a, 'rb')
+        if config.config['debug']:
+            logsend('File '+a+' opened...')
+        tekst = plik.read()
+        plik.close()
+        try:
+            tcpCliSock.send(tekst)
+            if config.config['debug']:
+                logsend('File '+a+' sended')
+            os.remove(a)
+            logsend(str(a)+" deleted")
+        except:
+            if config.config['debug']:
+                logsend('Error manipulation with file '+a+'')
+                return()
+        if switch(tcpCliSock):
+            pass
+        else:
+            return()
+        if config.config['debug']:
+            logsend('remote info from server recieved')
+    tryrestart = 0
+
+
+def entry(packet):
+    if config.config['debug']:
+        logsend('Creating json packet')
+    entry = {
+        "time": packet.split()[0],
+        "longitude": packet.split()[1],
+        "latitude": packet.split()[2],
+        "state": str(packet.split()[3]),
+    }
+    return(entry)
+
+
+def decoder(data):
+    print (data)
+    for a in range(0, len(data)):
+        print (" ")
+        print data[a]['latitude']
+        print data[a]['longitude']
+        print data[a]['time']
+
+
+def switch(tcpCliSock):
+    if config.config['debug']:
+        logsend("enter switch procedure")
+    global livestream
+    global circuiton
+    wh = True
+    servanswer = 0
+    while wh:
+        try:
+            recv = tcpCliSock.recv(1024)
+            wh = False
+        except:
+            logsend("waiting for server answer")
+            servanswer += 1
+            if (servanswer > config.config['waitingforserveranswer']):
+                restart()
+            time.sleep(0.1)
+    if recv == ("ok"):
+        livestream = True
+        if config.config['debug']:
+            logsend("livestream is True")
+        return(True)
+    if recv == ("no"):
+        livestream = False
+        if config.config['debug']:
+            logsend("livestream is False")
+        return(True)
+    if recv == ("off"):
+        logsend("circuit off message was recieved")
+        gpio.output(port.PG9, gpio.LOW)
+        circuiton = False
+        return(True)
+    if recv == ("on"):
+        logsend("circuit ON !!!")
+        gpio.output(port.PG9, gpio.HIGH)
+        circuiton = True
+        return(True)
+    if recv == ("restart"):
+        restart()
+        return(True)
+    if recv == ("reset"):
+        resetdevice()
+        return(True)
+    else:
+        logsend("no data from server")
+        return(False)
+
+
+def sendingdata(tcpCliSock, data):
+    global jsn
+    global tryrestart
+    global livestream
+    global alive
+    global datapacket
+    global withdatapacket
+    if config.config['debug']:
+        logsend('Enter sendingdata procedure data = '+str(data))
+    if tcpCliSock == ("offline"):
+        livestream = False
+    dataheader = str("short ")
+    datasend = dataheader+data
+    if livestream:
+        if config.config['debug']:
+            logsend('sendingdata:  livestream is TRUE')
+        try:
+            if config.config['debug']:
+                logsend('sendingdata:  try sending')
+            tcpCliSock.send(datasend)
+            if config.config['debug']:
+                logsend('sendingdata:  sending OK')
+            if config.config['debug']:
+                logsend("small packet was send to server...")
+            if not switch(tcpCliSock):
+                restart()
+        except socket.error, msg:
+            if config.config['debug']:
+                logsend('sendingdata:  socket ERROR')
+            logsend("socket errot -> "+str(msg))
+            logsend("lost packet -> "+str(datasend))
+            restart()
+    else:
+        if config.config['debug']:
+            logsend('sendingdata:  no livestream and append data')
+        li.append(data)
+        data1 = data.split(" ")
+        if ((data1[1]) != "99.999999999") and ((data1[1]) != "n/a"):
+            if config.config['debug']:
+                logsend('sendingdata:  packet is TRUE')
+            withdatapacket += 1
+        if config.config['debug']:
+            logsend(str(jsn)+' = jsn time = '+str(int(time.time())))
+            logsend(str(datapacket)+' = data wdata = '+str(withdatapacket))
+        tm = int(time.time())
+        if (jsn < tm) or (math.fabs(jsn-tm) > (config.config['jsonlengt']+20)):
+            if config.config['debug']:
+                logsend('sendingdata:  json packet is FULL')
+            if withdatapacket == 0:
+                if config.config['debug']:
+                    logsend('sendingdata: in json no packet with real data')
+                datapacket += 1
+            else:
+                datapacket = 0
+            withdatapacket = 0
+            if datapacket > 4:
+                if config.config['debug']:
+                    logsend('sendingdata:  to many packet with no real data')
+                resetdevice()
+            li.reverse()
+            if config.config['debug']:
+                logsend('sendingdata:  reversing list')
+            packet = []
+            while li != []:
+                packet.append(entry(li.pop()))
+            # logsend(packet)
+            if config.config['debug']:
+                logsend('sendingdata:  compression data')
+            compdata = bz2.compress(json.dumps(packet))
+            if tcpCliSock == ("offline"):
+                savedata(compdata)
+                if tryrestart > config.config['trytorestart']:
+                    restart()
+                tryrestart += 1
+            else:
+                if config.config['debug']:
+                    logsend('sendingdata:  going to sending compress data')
+                try:
+                    tcpCliSock.send(compdata)
+                    if config.config['debug']:
+                        logsend("send data OK")
+                    if switch(tcpCliSock):
+                        if config.config['debug']:
+                            logsend("Data was recieved by server")
+                        loaddata(tcpCliSock)
+                    else:
+                        logsend("Data was not recieved by server")
+                        savedata(compdata)
+                except:
+                    logsend("send or recv data FALSE")
+                    savedata(compdata)
+                    if tryrestart > config.config['trytorestart']:
+                        restart()
+                    tryrestart += 1
+            jsn = int(time.time()) + config.config['jsonlengt']
+            if config.config['debug']:
+                logsend('sendingdata:  new json-end value')
+        if config.config['debug']:
+            logsend('sendingdata:  end of procedure')
+
+
+def sendergps(tcpCliSock):
+    global alive
+    if config.config['debug']:
+        logsend('Enter senderGPS procedure')
+    ldata = 0
+    logsend("sendergps lets'go")
+    gps_socket = gps3.GPSDSocket()
+    data_stream = gps3.DataStream()
+    gps_socket.connect()
+    gps_socket.watch()
+    while True:
+        if config.config['debug']:
+            logsend('senderGPS:  begin of main while')
+        for new_data in gps_socket:
+            if int(time.time()) > alive:
+                logsend('alive temp='+temperature())
+                d = str(int(time.time()))+(" 99.999999999 99.999999999 ")
+                sendingdata(tcpCliSock, d+devicestate())
+                if config.config['debug']:
+                    logsend('return from sendingdata (perdiodic fake data)')
+            if new_data:
+                data_stream.unpack(new_data)
+                data1 = (str(int(time.time()))+(" "))
+                dslat = str(data_stream.TPV['lat'])
+                data2 = str(data_stream.TPV['lon'])+(" ")+dslat
+                if not (data2 == ldata):
+                    data = data1 + data2 + (" ") + devicestate()
+                    ldata = data2
+                    sendingdata(tcpCliSock, data)
+                    if config.config['debug']:
+                        logsend('return from sendingdata (data from GPS)')
+            else:
+                if config.config['GPSFAKEDATA']:
+                    d0 = str(int(time.time()))+(" 21.")
+                    d1 = str(random.random())[2:11]+(" 52.")
+                    d2 = str(random.random())[2:11]+(" ")+devicestate()
+                    sendingdata(tcpCliSock, d0+d1+d2)
+                    if config.config['debug']:
+                        logsend('return from sendingdata (data from random)')
+                    time.sleep(1)
+
+
+def main():
+    tcpCliSock = None
+    logsend("GPIO initializing...")
+    gpio.init()
+    gpio.setcfg(port.PG9, gpio.OUTPUT)
+    gpio.output(port.PG9, gpio.HIGH)
+    for res in socket.getaddrinfo(config.config['HOST'], config.config['PORT'], socket.AF_UNSPEC, socket.SOCK_STREAM):
+        af, socktype, proto, canonname, sa = res
+        try:
+            tcpCliSock = socket.socket(af, socktype, proto)
+            logsend('Preparing data socket:')
+            tcpCliSock.settimeout(config.config['TMOUT'])
+            logsend('Preparing networksocket options')
+        except socket.error, msg:
+            logsend(msg)
+            tcpCliSock = None
+
+        try:
+            tcpCliSock.connect(sa)
+            destin = (' to port: ')+str(config.config['PORT'])
+            logsend("".join('Connection from: ')+str(config.config['HOST'])+destin)
+        except socket.error, msg:
+            logsend('cannot be connection establish')
+            tcpCliSock.close()
+            tcpCliSock = None
+            continue
+        break
+
+    if tcpCliSock is None:
+        logsend('cannot be data socket established !')
+        logsend('working in offline mode')
+        sendergps("offline")
+    else:
+        logsend('Data socket ready !!!')
+
+    data = "gps"
+    tcpCliSock.send(data)
+    try:
+        data = tcpCliSock.recv(1024)
+    except:
+        restart()
+    logsend(data)
+    if data == ("gps mode OK"):
+        #  print("przeskok")
+        sendergps(tcpCliSock)
+    tcpCliSock.close()
+    logsend('remote server closed')
+    restart()
+
+
+# 0
+if __name__ == '__main__':
+    sys.exit(main())
