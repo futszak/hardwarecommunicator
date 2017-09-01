@@ -67,7 +67,7 @@ class state
     $a = mysqli_fetch_assoc($q); $a = $a['action'];
     if ($a == "on" || $a == "off" || $a == "restart" || $a == "reset")
     {
-      mysqli_query($this->handle,"INSERT INTO commands (action,ip) VALUES ('done',');");
+      mysqli_query($this->handle,"INSERT INTO commands (action,ip) VALUES ('done','127.0.0.1');");
       return($a);
     }
     else
