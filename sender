@@ -9,6 +9,7 @@ import math
 import os
 import json
 import bz2
+import thread
 import random
 import senderconfig as config
 import subprocess
@@ -53,6 +54,16 @@ def lamprestart(y=False):
         lines('blue', False)
         time.sleep(0.15)
         x = x + 1
+
+
+def blinktimer(colour):
+    lines(colour, True)
+    time.sleep(0.3)
+    lines(colour, False)
+
+
+def blink(colour):
+    thread.start_new_thread(blinktimer, (colour, ))
 
 
 def restart():
@@ -261,10 +272,8 @@ def httpsend(data):
     try:
         r = req.post(config.config['reporting_url'], data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     except:
-        lines('white', True)
-        time.sleep(0.3)
+        blink('white')
         lines('red', False)
-        lines('white', False)
         return("error")
     alive = int(time.time()) + config.config['alive']
     lines('red', False)
@@ -432,29 +441,24 @@ def sendergps(tcpCliSock):
             logsend('senderGPS:  begin of main while')
         for new_data in gps_socket:
             if int(time.time()) > alive:
-                lines('white', True)
+                blink('white')
                 logsend('alive temp='+temperature())
                 d = str(int(time.time()))+(" 99.999999999 99.999999999 ")
-                time.sleep(0.3)
                 sendingdata(tcpCliSock, d+devicestate())
                 if config.config['debug']:
                     logsend('return from sendingdata (perdiodic fake data)')
-                lines('white', False)
             if new_data:
                 data_stream.unpack(new_data)
                 data1 = (str(int(time.time()))+(" "))
                 dslat = str(data_stream.TPV['lat'])
                 data2 = str(data_stream.TPV['lon'])+(" ")+dslat
                 if not (data2 == ldata):
-                    lines('blue', True)
+                    blink('blue')
                     data = data1 + data2 + (" ") + devicestate()
                     ldata = data2
                     sendingdata(tcpCliSock, data)
                     if config.config['debug']:
                         logsend('return from sendingdata (data from GPS)')
-                    time.sleep(0.3)
-                    lines('blue', False)
-
             else:
                 if config.config['GPSFAKEDATA']:
                     lines('white', True)
