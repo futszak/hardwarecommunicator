@@ -2,7 +2,8 @@
 <html lang="en">
 
 <head>
-    <title>Python Flask Bucket List App</title>
+    <title>controlling</title>
+    <meta http-equiv="refresh" content="1; url=/">
     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
 
