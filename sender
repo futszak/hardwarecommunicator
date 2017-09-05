@@ -183,14 +183,14 @@ def switch(tcpCliSock, h=False):
     if recv == ("off"):
         livestream = True
         logsend("circuit off message was recieved")
-        gpio.output(port.PG9, gpio.LOW)
+        gpio.output(port.PG8, gpio.LOW)
         circuiton = False
         return(True)
     if recv == ("on"):
         livestream = True
         if config.config['debug']:
             logsend("circuit ON !!!")
-        gpio.output(port.PG9, gpio.HIGH)
+        gpio.output(port.PG8, gpio.HIGH)
         circuiton = True
         return(True)
     if recv == ("restart"):
@@ -449,8 +449,8 @@ def main():
     tcpCliSock = None
     logsend("GPIO initializing...")
     gpio.init()
-    gpio.setcfg(port.PG9, gpio.OUTPUT)
-    gpio.output(port.PG9, gpio.HIGH)
+    gpio.setcfg(port.PG8, gpio.OUTPUT)
+    gpio.output(port.PG8, gpio.HIGH)
     if config.config['httpsend']:
         logsend("sendergps in HTTP mode lets'go")
         sendergps("http")
