@@ -33,11 +33,30 @@ slatitude = 3365845
 
 
 def resetdevice():
+    lines('red', True)
+    lines('white', True)
+    lines('blue', True)
     logsend("RESET MACHINE...")
     subprocess.call("/sbin/reboot")
 
 
+def lamprestart(y=False):
+    x = 0
+    while x < 5:
+        if y:
+            lines('red', True)
+        lines('white', True)
+        lines('blue', True)
+        time.sleep(0.15)
+        lines('red', False)
+        lines('white', False)
+        lines('blue', False)
+        time.sleep(0.15)
+        x = x + 1
+
+
 def restart():
+    lamprestart(True)
     time.sleep(config.config['trytorestart'])
     python = sys.executable
     os.execl(python, python, * sys.argv)
@@ -242,7 +261,10 @@ def httpsend(data):
     try:
         r = req.post(config.config['reporting_url'], data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     except:
+        lines('white', True)
+        time.sleep(0.3)
         lines('red', False)
+        lines('white', False)
         return("error")
     alive = int(time.time()) + config.config['alive']
     lines('red', False)
@@ -412,35 +434,39 @@ def sendergps(tcpCliSock):
             if int(time.time()) > alive:
                 lines('white', True)
                 logsend('alive temp='+temperature())
-                time.sleep(0.5)
                 d = str(int(time.time()))+(" 99.999999999 99.999999999 ")
+                time.sleep(0.3)
                 sendingdata(tcpCliSock, d+devicestate())
                 if config.config['debug']:
                     logsend('return from sendingdata (perdiodic fake data)')
                 lines('white', False)
             if new_data:
-                lines('blue', True)
                 data_stream.unpack(new_data)
                 data1 = (str(int(time.time()))+(" "))
                 dslat = str(data_stream.TPV['lat'])
                 data2 = str(data_stream.TPV['lon'])+(" ")+dslat
                 if not (data2 == ldata):
+                    lines('blue', True)
                     data = data1 + data2 + (" ") + devicestate()
                     ldata = data2
                     sendingdata(tcpCliSock, data)
                     if config.config['debug']:
                         logsend('return from sendingdata (data from GPS)')
-                lines('blue', False)
+                    time.sleep(0.3)
+                    lines('blue', False)
 
             else:
                 if config.config['GPSFAKEDATA']:
+                    lines('white', True)
                     d0 = str(int(time.time()))+(" 21.")
                     d1 = slong()+(" 52.")
                     d2 = slat()+(" ")+devicestate()
                     sendingdata(tcpCliSock, d0+d1+d2)
+                    time.sleep(0.5)
+                    lines('white', False)
                     if config.config['debug']:
                         logsend('return from sendingdata (data from random)')
-                    time.sleep(1)
+                    time.sleep(0.5)
 
 
 def tcpinit():
@@ -491,6 +517,7 @@ def tcpinit():
 def main():
     # tcpCliSock = None
     logsend(lines('init'))
+    lamprestart()
     if config.config['httpsend']:
         logsend("sendergps in HTTP mode lets'go")
         sendergps("http")
