@@ -31,6 +31,7 @@ datapacket = 0
 alive = int(time.time()) + config.config['alive']
 slongitude = 6549345
 slatitude = 3365845
+red = 0
 
 
 def resetdevice():
@@ -64,6 +65,18 @@ def blinktimer(colour):
 
 def blink(colour):
     thread.start_new_thread(blinktimer, (colour, ))
+
+
+def redled(state):
+    global red
+    if state:
+        red = red + 1
+    else:
+        red = red - 1
+    if red:
+        lines('red', True)
+    else:
+        lines('red', False)
 
 
 def restart():
@@ -268,7 +281,8 @@ def switch(tcpCliSock, h=False):
 
 def httpsend(data):
     global alive
-    lines('red', True)
+    # lines('red', True)
+    redled(True)
     try:
         r = req.post(config.config['reporting_url'], data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     except:
@@ -276,7 +290,8 @@ def httpsend(data):
         lines('red', False)
         return("error")
     alive = int(time.time()) + config.config['alive']
-    lines('red', False)
+    # lines('red', False)
+    redled(False)
     return(r.text)
 
 
