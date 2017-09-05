@@ -48,14 +48,14 @@ class state
     $bgn = "https://maps.googleapis.com/maps/api/staticmap?center=";
     $mdl = "&zoom=15&size=600x600&markers=color:red%7Clabel:D%7C";
     $end = "&key=";
-    $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps ORDER BY time DESC LIMIT 1;');
+    $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps WHERE longitude<>"n/a" AND longitude<>"99.999999999" ORDER BY time DESC LIMIT 1;');
     $a = mysqli_fetch_assoc($q);
     $lola = $a['latitude'].",".$a['longitude'];
     return ($bgn.$lola.$mdl.$lola.$end."AIzaSyDI39Yn7r299GZTDbuHhn9lsVL70BGmV4A");
   }
 
   function lastposition() {
-    $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps ORDER BY time DESC LIMIT 1;');
+    $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps WHERE longitude<>"n/a" AND longitude<>"99.999999999" ORDER BY time DESC LIMIT 1;');
     $a = mysqli_fetch_assoc($q);
     $lola = $a['latitude'].",".$a['longitude'];
     return ($lola);
@@ -116,7 +116,7 @@ class state
     $q = mysqli_query($this->handle,'SELECT time FROM gps ORDER BY time DESC LIMIT 1;');
     $a = mysqli_fetch_assoc($q);
     $t = time() - $a['time'];
-    if ($t < 5)
+    if ($t < 16)
     {
       return (1);
     }
@@ -137,7 +137,7 @@ class state
     $lp = 1;
     while ($z > 0)
     {
-      $q = mysqli_query($this->handle,'SELECT time,longitude,latitude,state FROM gps WHERE time<'.$ti.' ORDER BY time DESC LIMIT 1;');
+      $q = mysqli_query($this->handle,'SELECT time,longitude,latitude,state FROM gps WHERE longitude<>"n/a" AND longitude<>"99.999999999" AND time<'.$ti.' ORDER BY time DESC LIMIT 1;');
       $a = mysqli_fetch_assoc($q);
       $time = $a['time'];
       $link = '<a href="'.$this->maplink($time).'">';
