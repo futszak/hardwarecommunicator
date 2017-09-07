@@ -21,7 +21,7 @@ from pyA20.gpio import port
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP logging
 sock.settimeout(5)
 afterstart = True
-livestream = True
+livestream = False
 li = []
 jsn = int(time.time()) + config.config['jsonlengt']
 circuiton = True
@@ -286,8 +286,11 @@ def httpsend(data):
     try:
         r = req.post(config.config['reporting_url'], data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     except:
-        blink('white')
-        lines('red', False)
+        if config.config['GPSFAKEDATA']:
+            blink('blue')
+        else:
+            blink('white')
+        redled(False)
         return("error")
     alive = int(time.time()) + config.config['alive']
     # lines('red', False)
