@@ -166,6 +166,13 @@ def savedata(data):
         logsend(str(filename)+" with data saved")
 
 
+def httpsendth(data, filename):
+    logsend(httpsend(data))
+    if httpsend(data) != "error":
+        os.remove(filename)
+        logsend(str(filename)+" deleted")
+
+
 def loaddata(tcpCliSock='0'):
     global tryrestart
     if config.config['debug']:
@@ -174,18 +181,20 @@ def loaddata(tcpCliSock='0'):
     for a in os.listdir('.'):
         if (a[:(len(config.config['savefilename']))]) == (config.config['savefilename']):
             li.append(a)
+    thr = 0
     for a in li:
         plik = open(a, 'rb')
         if config.config['debug']:
             logsend('File '+a+' opened...')
         tekst = plik.read()
         plik.close()
+        if config.config['debug']:
+            logsend('thr = '+str(thr))
         if config.config['httpsend']:
-            hs = httpsend(tekst)
-            switch(hs, 1)
-            if httpsend(tekst) != "error":
-                os.remove(a)
-                logsend(str(a)+" deleted")
+            if (thr > config.config['connections']):
+                break
+            thread.start_new_thread(httpsendth, (tekst, a))
+            thr = thr + 1
         else:
             try:
                 tcpCliSock.send(tekst)
@@ -281,20 +290,19 @@ def switch(tcpCliSock, h=False):
 
 def httpsend(data):
     global alive
-    # lines('red', True)
-    redled(True)
     try:
+        redled(True)
         r = req.post(config.config['reporting_url'], data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     except:
         if config.config['GPSFAKEDATA']:
             blink('blue')
         else:
             blink('white')
-        redled(False)
-        return("error")
+            redled(False)
+            return("error")
     alive = int(time.time()) + config.config['alive']
-    # lines('red', False)
     redled(False)
+    switch((r.text), 1)
     return(r.text)
 
 
@@ -325,9 +333,9 @@ def sendingdata(tcpCliSock, data):
                 logsend("preparing short json packet")
             compdata = bz2.compress(datasend)
             hs = httpsend(compdata)
-            if config.config['debug']:
-                logsend(hs)
-            switch(hs, 1)
+            # if config.config['debug']:
+            #     logsend(hs)
+            # switch(hs, 1)
             if (hs == "error"):
                 logsend("error with http "+datasend)
         else:
@@ -394,7 +402,7 @@ def sendingdata(tcpCliSock, data):
                 #  send ing data via http
                 if config.config['httpsend']:
                     hs = httpsend(compdata)
-                    switch(hs, 1)
+                    # switch(hs, 1)
                     logsend(hs)
                     if (hs != "error"):
                         loaddata()
@@ -444,8 +452,10 @@ def slat():
 
 
 def sendergps(tcpCliSock):
+    blink('white')
     global alive
     global slatitude
+    global withdatapacket
     if config.config['debug']:
         logsend('Enter senderGPS procedure')
     ldata = 0
@@ -479,16 +489,14 @@ def sendergps(tcpCliSock):
                         logsend('return from sendingdata (data from GPS)')
             else:
                 if config.config['GPSFAKEDATA']:
-                    lines('white', True)
+                    blink('white')
                     d0 = str(int(time.time()))+(" 21.")
                     d1 = slong()+(" 52.")
                     d2 = slat()+(" ")+devicestate()
                     sendingdata(tcpCliSock, d0+d1+d2)
-                    time.sleep(0.5)
-                    lines('white', False)
                     if config.config['debug']:
                         logsend('return from sendingdata (data from random)')
-                    time.sleep(0.5)
+                    time.sleep(1)
 
 
 def tcpinit():
