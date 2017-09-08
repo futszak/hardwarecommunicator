@@ -35,13 +35,11 @@ class state
   }
 
   function maplink($timestamp) {
-    $bgn = "https://maps.googleapis.com/maps/api/staticmap?center=";
-    $mdl = "&zoom=15&size=600x600&markers=color:red%7Clabel:D%7C";
-    $end = "&key=";
+    $bgn = "mapajstatic.php?longitude=";
     $q = mysqli_query($this->handle,'SELECT longitude,latitude FROM gps WHERE time='.$timestamp.' LIMIT 1;');
     $a = mysqli_fetch_assoc($q);
-    $lola = $a['latitude'].",".$a['longitude'];
-    return ($bgn.$lola.$mdl.$lola.$end."AIzaSyDI39Yn7r299GZTDbuHhn9lsVL70BGmV4A");
+    $lola = $a['longitude']."&latitude=".$a['latitude'];
+    return ($bgn.$lola);
   }
 
   function lastmaplink() {
