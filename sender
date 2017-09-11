@@ -168,8 +168,9 @@ def savedata(data):
 
 
 def httpsendth(data, filename):
-    logsend(httpsend(data))
-    if httpsend(data) != "error":
+    hs = httpsend(data)
+    logsend(hs)
+    if hs != "error":
         os.remove(filename)
         logsend(str(filename)+" deleted")
 
