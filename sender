@@ -73,6 +73,7 @@ def redled(state):
         red = red + 1
     else:
         red = red - 1
+    logsend("http sessions -> "+str(red))
     if red:
         lines('red', True)
     else:
