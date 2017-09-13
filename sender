@@ -32,6 +32,7 @@ alive = int(time.time()) + config.config['alive']
 slongitude = 6549345
 slatitude = 3365845
 red = 0
+ldata = True
 
 
 def resetdevice():
@@ -174,45 +175,29 @@ def httpsendth(data, filename):
     if hs != "error":
         os.remove(filename)
         logsend(str(filename)+" deleted")
+        time.sleep(0.2)
+    else:
+        return(True)
 
 
 def loaddata(tcpCliSock='0'):
     global tryrestart
+    global ldata
+    ldata = False
     if config.config['debug']:
         logsend('Enter to loaddata procedure...')
     li = []
     for a in os.listdir('.'):
         if (a[:(len(config.config['savefilename']))]) == (config.config['savefilename']):
             li.append(a)
-    thr = 0
     for a in li:
         plik = open(a, 'rb')
         if config.config['debug']:
             logsend('File '+a+' opened...')
         tekst = plik.read()
         plik.close()
-        if config.config['debug']:
-            logsend('thr = '+str(thr))
-        if config.config['httpsend']:
-            if (thr > config.config['connections']):
-                break
-            thread.start_new_thread(httpsendth, (tekst, a))
-            thr = thr + 1
-        else:
-            try:
-                tcpCliSock.send(tekst)
-                if config.config['debug']:
-                    logsend('File '+a+' sended')
-                os.remove(a)
-                logsend(str(a)+" deleted")
-            except:
-                if config.config['debug']:
-                    logsend('Error manipulation with file '+a+'')
-                    return()
-            if switch(tcpCliSock):
-                pass
-            else:
-                return()
+        if (httpsendth(tekst, a)):
+            break
         if config.config['debug']:
             logsend('remote info from server recieved')
     tryrestart = 0
@@ -309,6 +294,20 @@ def httpsend(data):
     return(r.text)
 
 
+def sendingthread(compdata):
+    global ldata
+    hs = httpsend(compdata)
+    logsend(hs)
+    if (hs != "error"):
+        if ldata:
+            loaddata()
+            ldata = True
+        else:
+            logsend('to many threads with old data')
+    else:
+        savedata(compdata)
+
+
 def sendingdata(tcpCliSock, data):
     global afterstart
     global jsn
@@ -374,12 +373,9 @@ def sendingdata(tcpCliSock, data):
             compdata = bz2.compress(json.dumps(packet))
             if config.config['debug']:
                 logsend('sendingdata:  going to sending compress data')
-            hs = httpsend(compdata)
-            logsend(hs)
-            if (hs != "error"):
-                loaddata()
-            else:
-                savedata(compdata)
+
+            thread.start_new_thread(sendingthread, (compdata, ))
+
             jsn = int(time.time()) + config.config['jsonlengt']
             if config.config['debug']:
                 logsend('sendingdata:  new json-end value')
@@ -454,7 +450,6 @@ def sendergps(tcpCliSock):
 def main():
     logsend(lines('init'))
     lamprestart()
-    logsend("sendergps lets'go")
     sendergps("http")
 
 
