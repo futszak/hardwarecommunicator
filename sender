@@ -331,33 +331,11 @@ def sendingdata(tcpCliSock, data):
     if livestream:
         if config.config['debug']:
             logsend('sendingdata:  livestream is TRUE')
-        if config.config['httpsend']:
-            if config.config['debug']:
-                logsend("preparing short json packet")
-            compdata = bz2.compress(datasend)
-            hs = httpsend(compdata)
-            # if config.config['debug']:
-            #     logsend(hs)
-            # switch(hs, 1)
-            if (hs == "error"):
-                logsend("error with http "+datasend)
-        else:
-            try:
-                if config.config['debug']:
-                    logsend('sendingdata:  try sending')
-                tcpCliSock.send(datasend)
-                if config.config['debug']:
-                    logsend('sendingdata:  sending OK')
-                if config.config['debug']:
-                    logsend("small packet was send to server...")
-                if not switch(tcpCliSock):
-                    restart()
-            except socket.error, msg:
-                if config.config['debug']:
-                    logsend('sendingdata:  socket ERROR')
-                logsend("socket errot -> "+str(msg))
-                logsend("lost packet -> "+str(datasend))
-                restart()
+            logsend("preparing short json packet")
+        compdata = bz2.compress(datasend)
+        hs = httpsend(compdata)
+        if (hs == "error"):
+            logsend("error with http "+datasend)
     else:
         if config.config['debug']:
             logsend('sendingdata:  no livestream and append data')
@@ -402,35 +380,12 @@ def sendingdata(tcpCliSock, data):
             else:
                 if config.config['debug']:
                     logsend('sendingdata:  going to sending compress data')
-                #  send ing data via http
-                if config.config['httpsend']:
-                    hs = httpsend(compdata)
-                    # switch(hs, 1)
-                    logsend(hs)
-                    if (hs != "error"):
-                        loaddata()
-                    else:
-                        savedata(compdata)
+                hs = httpsend(compdata)
+                logsend(hs)
+                if (hs != "error"):
+                    loaddata()
                 else:
-                    try:
-                        #  sending 2 server via tcpCliSock
-                        tcpCliSock.send(compdata)
-                        if config.config['debug']:
-                            logsend("send data OK")
-                        #  recieving data from server
-                        if switch(tcpCliSock):
-                            if config.config['debug']:
-                                logsend("Data was recieved by server")
-                            loaddata(tcpCliSock)
-                        else:
-                            logsend("Data was not recieved by server")
-                            savedata(compdata)
-                    except:
-                        logsend("send or recv data FALSE")
-                        savedata(compdata)
-                        if tryrestart > config.config['trytorestart']:
-                            restart()
-                        tryrestart += 1
+                    savedata(compdata)
             jsn = int(time.time()) + config.config['jsonlengt']
             if config.config['debug']:
                 logsend('sendingdata:  new json-end value')
@@ -502,61 +457,11 @@ def sendergps(tcpCliSock):
                     time.sleep(1)
 
 
-def tcpinit():
-    for res in socket.getaddrinfo(config.config['HOST'], config.config['PORT'], socket.AF_UNSPEC, socket.SOCK_STREAM):
-        af, socktype, proto, canonname, sa = res
-        try:
-            tcpCliSock = socket.socket(af, socktype, proto)
-            logsend('Preparing data socket:')
-            tcpCliSock.settimeout(config.config['TMOUT'])
-            logsend('Preparing networksocket options')
-        except socket.error, msg:
-            logsend(msg)
-            tcpCliSock = None
-
-        try:
-            tcpCliSock.connect(sa)
-            destin = (' to port: ')+str(config.config['PORT'])
-            logsend("".join('Connection from: ')+str(config.config['HOST'])+destin)
-        except socket.error, msg:
-            logsend('cannot be connection establish')
-            tcpCliSock.close()
-            tcpCliSock = None
-            continue
-        break
-
-    if tcpCliSock is None:
-        logsend('cannot be data socket established !')
-        logsend('working in offline mode')
-        sendergps("offline")
-    else:
-        logsend('Data socket ready !!!')
-
-    data = "gps"
-    tcpCliSock.send(data)
-    try:
-        data = tcpCliSock.recv(1024)
-    except:
-        restart()
-    logsend(data)
-    if data == ("gps mode OK"):
-        #  print("przeskok")
-        sendergps(tcpCliSock)
-    tcpCliSock.close()
-    logsend('remote server closed')
-    restart()
-
-
 def main():
-    # tcpCliSock = None
     logsend(lines('init'))
     lamprestart()
-    if config.config['httpsend']:
-        logsend("sendergps in HTTP mode lets'go")
-        sendergps("http")
-    else:
-        logsend("sendergps in TCP mode lets'go")
-        tcpinit()
+    logsend("sendergps lets'go")
+    sendergps("http")
 
 
 if __name__ == '__main__':
