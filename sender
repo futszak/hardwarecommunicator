@@ -180,7 +180,7 @@ def httpsendth(data, filename):
         return(True)
 
 
-def loaddata(tcpCliSock='0'):
+def loaddata():
     global tryrestart
     global ldata
     ldata = False
@@ -216,7 +216,7 @@ def entry(packet):
     return(entry)
 
 
-def switch(tcpCliSock, h=False):
+def switch(value, h=False):
     if config.config['debug']:
         logsend("enter switch procedure")
         if h:
@@ -225,21 +225,10 @@ def switch(tcpCliSock, h=False):
     global circuiton
     wh = True
     servanswer = 0
-    if h:
-        if (tcpCliSock == "error"):
-            return(False)
-        recv = tcpCliSock
-    else:
-        while wh:
-            try:
-                recv = tcpCliSock.recv(1024)
-                wh = False
-            except:
-                logsend("waiting for server answer")
-                servanswer += 1
-                if (servanswer > config.config['waitingforserveranswer']):
-                    restart()
-                time.sleep(0.1)
+    # if h:
+    if (value == "error"):
+        return(False)
+    recv = value
     if config.config['debug']:
         logsend("recvvv = "+str(recv))
     if recv == ("ok"):
@@ -308,7 +297,7 @@ def sendingthread(compdata):
         savedata(compdata)
 
 
-def sendingdata(tcpCliSock, data):
+def sendingdata(data):
     global afterstart
     global jsn
     global tryrestart
@@ -325,8 +314,6 @@ def sendingdata(tcpCliSock, data):
         dataheader = str("short ")
     datasend = dataheader+data
     # livestream = True
-    if tcpCliSock == ("offline"):
-        livestream = False
     if livestream:
         if config.config['debug']:
             logsend('sendingdata:  livestream is TRUE')
@@ -399,7 +386,7 @@ def slat():
     return(str(slatitude)[0:7])
 
 
-def sendergps(tcpCliSock):
+def sendergps():
     blink('white')
     global alive
     global slatitude
@@ -420,7 +407,7 @@ def sendergps(tcpCliSock):
                 blink('white')
                 logsend('alive temp='+temperature())
                 d = str(int(time.time()))+(" 99.999999999 99.999999999 ")
-                sendingdata(tcpCliSock, d+devicestate())
+                sendingdata(d+devicestate())
                 if config.config['debug']:
                     logsend('return from sendingdata (perdiodic fake data)')
             if new_data:
@@ -432,7 +419,7 @@ def sendergps(tcpCliSock):
                     blink('blue')
                     data = data1 + data2 + (" ") + devicestate()
                     ldata = data2
-                    sendingdata(tcpCliSock, data)
+                    sendingdata(data)
                     if config.config['debug']:
                         logsend('return from sendingdata (data from GPS)')
             else:
@@ -441,7 +428,7 @@ def sendergps(tcpCliSock):
                     d0 = str(int(time.time()))+(" 21.")
                     d1 = slong()+(" 52.")
                     d2 = slat()+(" ")+devicestate()
-                    sendingdata(tcpCliSock, d0+d1+d2)
+                    sendingdata(d0+d1+d2)
                     if config.config['debug']:
                         logsend('return from sendingdata (data from random)')
                     time.sleep(1)
@@ -450,7 +437,7 @@ def sendergps(tcpCliSock):
 def main():
     logsend(lines('init'))
     lamprestart()
-    sendergps("http")
+    sendergps()
 
 
 if __name__ == '__main__':
