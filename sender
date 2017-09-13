@@ -372,20 +372,14 @@ def sendingdata(tcpCliSock, data):
             if config.config['debug']:
                 logsend('sendingdata:  compression data')
             compdata = bz2.compress(json.dumps(packet))
-            if tcpCliSock == ("offline"):
-                savedata(compdata)
-                if tryrestart > config.config['trytorestart']:
-                    restart()
-                tryrestart += 1
+            if config.config['debug']:
+                logsend('sendingdata:  going to sending compress data')
+            hs = httpsend(compdata)
+            logsend(hs)
+            if (hs != "error"):
+                loaddata()
             else:
-                if config.config['debug']:
-                    logsend('sendingdata:  going to sending compress data')
-                hs = httpsend(compdata)
-                logsend(hs)
-                if (hs != "error"):
-                    loaddata()
-                else:
-                    savedata(compdata)
+                savedata(compdata)
             jsn = int(time.time()) + config.config['jsonlengt']
             if config.config['debug']:
                 logsend('sendingdata:  new json-end value')
