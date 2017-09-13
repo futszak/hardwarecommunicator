@@ -141,7 +141,10 @@ def logsend(s):
     port = config.config['UDP_PORT']
     try:
         sock.sendto((nt+str(s)+'\n'), (ip, port))
-        alive = int(time.time()) + config.config['alive']
+        if livestream:
+            alive = int(time.time()) + config.config['alive']
+        else:
+            alive = int(time.time()) + (config.config['jsonlengt']-10)
     except:
         time.sleep(10)
         restart()
@@ -277,16 +280,17 @@ def httpsend(data):
             blink('white')
             redled(False)
             return("error")
-    alive = int(time.time()) + config.config['alive']
+    # alive = int(time.time()) + config.config['alive']
     redled(False)
     switch((r.text), 1)
     return(r.text)
 
 
-def sendingthread(compdata):
+def sendingthread(packet):
     global ldata
+    compdata = bz2.compress(json.dumps(packet))
     hs = httpsend(compdata)
-    logsend(hs)
+    logsend('server told: '+str(hs))
     if (hs != "error"):
         if ldata:
             loaddata()
@@ -356,12 +360,9 @@ def sendingdata(data):
             while li != []:
                 packet.append(entry(li.pop()))
             if config.config['debug']:
-                logsend('sendingdata:  compression data')
-            compdata = bz2.compress(json.dumps(packet))
-            if config.config['debug']:
-                logsend('sendingdata:  going to sending compress data')
+                logsend('new thread for compress and sending data')
 
-            thread.start_new_thread(sendingthread, (compdata, ))
+            thread.start_new_thread(sendingthread, (packet, ))
 
             jsn = int(time.time()) + config.config['jsonlengt']
             if config.config['debug']:
